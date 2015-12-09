@@ -1,0 +1,664 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Function list}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The section lists the functions provided to the M3D-C1 Fortran driver by SCOREC.The functions are declared in the file m3dc1$\_$scorec.h.
+Throughout this section, unless specified,  mesh entities and DOF's are specified by a local ID. A word \emph{glob} is added to a function name to indicate a function that involves global communication or global data.
+
+\subsection{Enumeration types}
+The basic enumeration types that are used by the functions are listed. The coordinate system, the ordering option and the arithmetic type of  numbers are enumerated.
+
+\begin{verbatim}
+enum m3dc1_coord_system { /*0*/ M3DC1_RZPHI,  // default
+                         /*1*/ M3DC1_XYZ};
+
+enum m3dc1_ordering { 
+  /*0*/ M3DC1_NO_ADJ=0,  // mesh element and DOF ordering use the order from mesh traversal - default
+                         // solver (suplu_dist) reordering is turned on
+  /*1*/ M3DC1_SERIAL_ADJ, // use adjaceny-based order from the serial mesh; 
+                          // solver reordering is turned off        
+  /*2*/ M3DC1_DISTR_ADJ, // use adjaceny-based order from the distributed mesh;
+                         // solver reordering is turned off 
+  /*3*/ M3DC1_DISTR_ADJ_SOLVER}; // use the adjaceny-based order from distributed
+                                 // solver reordering is turned on
+
+enum m3dc1_field_type { 
+  /*0*/ M3DC1_REAL=0,  // real number for field value
+  /*1*/ M3DC1_COMPLEX}; // complex number for field value
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+\subsection{Initialization and finalization}
+The functions that initializes and finalizes the usage of  the software are listed.
+\begin{verbatim}
+int m3dc1_domain_init();
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function initializes the PUMI service for distributed model and mesh infrastructure. Note MPI should be initialized prior to this function.
+
+\begin{verbatim}
+int m3dc1_domain_finalize();
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function finalizes the PUMI service and clears all model/mesh related data. Note MPI finalization is not included.
+
+\begin{verbatim}
+// old name: initsolvers_
+int m3dc1_solver_init(); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function initialize solver data structure.
+
+\begin{verbatim}
+// old name: finalizesolvers_
+int m3dc1_solver_finalize()
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function cleans the solver data structure. 
+
+\subsection{Geometric model: general cross-section}
+The functions that load the geometry description of the Tokamak cross section from the file and inquire the geometric model are listed.
+
+\begin{verbatim}
+int m3dc1_model_load (char*  /* in */  model_file);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function loads a geometric model from a model file that describe the geometry of the 2D cross section of the Tokamak. The file can contain
+\begin{itemize}
+\item parameters of the user specified analytic expression that defines a single loop as $R(t)=a_1 + a_2cos\left(t + a_3sin(t)\right)$ and $Z(t)= a_4 + a_5sin(t)$.
+\item lists of geometric vertex and edges on the wall and vacuum boundaries and parameters of B-splines that define the shape of each edge.
+\end{itemize}
+
+\begin{verbatim}
+// old name: setnbprocplane_
+int m3dc1_model_setnumplane (int*    /* in */  num_plane);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function sets the number of planes to be used in the model.
+
+
+\begin{verbatim}
+// old name: setphirange_
+int m3dc1_model_setphirange (
+        double*  /* in */  min_val, 
+        double*  /* in */  max_val);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+Given double values \emph{min\_val} and \emph{max\_val}, the function sets the phi range.
+
+\begin{verbatim}
+// old name: getmincoord2_
+int m3dc1_model_getmincoord(
+        double* /* out */ x_min, 
+        double* /* out */ y_min);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function returns the minimum coordinate of the 2D cross section.
+	      \textit{x\_min} is the minimum horizontal coordinate value. 
+	      \textit{z\_min} is the minimum vertical coordinate value.
+\begin{verbatim}
+// old name getmaxcoord2_
+int m3dc1_model_getmaxcoord (
+        double* /* out */ x_max, 
+        double* /* out */ y_max);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+        
+The function returns the maximum coordinate of the 2D  cross section. 
+          \textit{x\_max} is the maximum horizontal coordinate value. 
+          \textit{Y\_max} is the maximum vertical coordinate value.
+
+\subsection{Geometric model: rectangular cross section}
+The functions that are only used when the cross section of the geometric model is rectangular are listed.
+
+\begin{verbatim}
+// old name: getmodeltags_
+int m3dc1_model_getedge (
+        int*  /* out */  left_edge,
+        int*  /* out */  right_edge, 
+        int*  /* out */  bottom_edge, 
+        int*  /* out */  top_edge);
+
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function returns the four model edges of the rectangular domain.
+
+\begin{verbatim}
+// old name: setperiodicinfo_
+int m3dc1_model_setpbc (
+        int* /* in */ x_pbc, 
+        int* /* in */ y_pbc); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function sets the periodic boundary condition in $x$ or $y$ direction of the rectangular domain. If the periodic boundary condition is used, set $x\_pbc$ or $y\_pbc$ to 1 (default: 0).
+\begin{verbatim}
+// old name: getperiodicinfo_
+int m3dc1_model_getpbc (
+        int* /* out */ x_pbc, 
+        int* /* out */ y_pbc); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function returns 1 (yes) or 0 (no) for the periodic boundary condition applied in $x$ or $y$ direction of the rectangular domain.
+\subsection{Mesh}
+The functions that load the mesh and inquire the mesh are listed.
+
+\begin{verbatim}
+int m3dc1_mesh_load (
+        char*  /* in */  mesh_file, 
+        int*   /* in */  distributed);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+ 
+The function loads a mesh from a mesh file.  \textit{distributed} is to indicate whether the input mesh is partitioned. The number of processes are divided into $num\_plane$ groups and each group loads the same 2D mesh.  $num\_plane$ is set by the function int $m3dc1\_model\_setnumplane$.
+ 
+\begin{verbatim}
+int m3dc1_mesh_build3d ();
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+ 
+The function construct 3D mesh from 2D meshes loaded on multiple planes. If the number of plane is 1, the error code \emph{PUMI\_NOT\_SUPPORTED} is returned.
+
+\begin{verbatim}
+int m3dc1_mesh_setcoord(int* coord_system);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function sets the coordinate system. Use enumeration type \emph{m3dc1\_coord\_system}.
+
+\begin{verbatim}
+int m3dc1_mesh_getcoord(int* coord_system);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function returns the current coordinate system. 
+
+
+\begin{verbatim}
+ // old name  numnod_ ;
+int m3dc1_mesh_getnument (
+        int* /* in*/ ent_dim, 
+        int* /* out */ num_ent);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+Given an entity dimension (0-3), the function gets the number of all (owned and not-owned) entities \textit{num\_ent} of the mesh on local process.
+If $ent\_dim$ is not valid, the error code $PUMI\_INVALID\_ENTITY\_TYPE$ is returned.
+
+\begin{verbatim}
+ // old name: numownedents_
+int m3dc1_mesh_getnumownent (
+        int* /* in*/ ent_dim, 
+        int* /* out */ num_ent);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+Given an entity dimension (0-3), the function gets the number of owned entities \textit{num\_ent} of the mesh on local process.
+If $ent\_dim$ is not valid, the error code $PUMI\_INVALID\_ENTITY\_TYPE$ is returned.
+
+\begin{verbatim}
+ // old name: numglobalents_
+int m3dc1_mesh_getnumglobent (
+        int* /* in*/ ent_dim, 
+        int* /* out */ global_num_ent);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+Given an entity dimension (0-3), the function gets the number of owned entities \textit{global\_num\_ent} of all processes.
+If $ent\_dim$ is not valid, the error code $PUMI\_INVALID\_ENTITY\_TYPE$ is returned.
+
+\begin{verbatim}
+// old name: set_adj_ordering_
+int m3dc1_mesh_setorderingopt (int* /* in */ option);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function sets the option for ordering. Use enumeration type \emph{m3dc1\_ordering} for the ordering option.
+\begin{itemize}
+\item M3DC1\_NO\_ADJ (or 0): use the ordering from mesh traversal (default)
+\item M3DC1\_SERIAL\_ADJ (or 1): use the adjaceny-based ordering on the serial mesh.
+\item M3DC1\_DISTR\_ADJ (or 2): adjacent ordering on the distributed mesh.
+\item M3DC1\_DISTR\_ADJ\_SOLVER (or 3): combination of adjaceny-based ordering on the distributed mesh and the ordering from the solver.
+\end{itemize} 
+
+\begin{verbatim}
+// old name: get_adj_ordering_option_
+int m3dc1_mesh_getorderingopt (int* /* out */ option)
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function gets the ordering option. 
+
+\begin{verbatim}
+// old name: createdofnumbering_
+int m3dc1_mesh_setdofid (
+        int* /* in */ dof_numbering_id, 
+        int* /* in */ iper, 
+        int* /* in */ jper,
+        int* /* in */ num_dofs_per_vertex, 
+        int* /* reserved - in */ num_dofs_per_edge,
+        int* /* reserved - in */ num_dofs_per_face, 
+        int* /* reserved - in */ num_dofs_per_region); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function generates local and global DOF id's specified by \textit{dof\_numbering\_id}. \textit{do\_numbering\_id} should be a positive integer. The number of DOF's per mesh entity type is specified by \textit{num\_dofs\_per\_vertex}, \textit{num\_dofs\_per\_edge}, \textit{num\_dofs\_per\_face}, and \textit{num\_dofs\_per\_region}. Currently, the dof is supported only for vertex type. \textit{iper} and \textit{jper} indicate whether to use periodic boundary condition (PBC).
+\begin{verbatim}
+// old name: deletedofnumbering_
+int m3dc1_mesh_deldofid (int* /* in */ dof_numbering_id); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function deletes the DOF ordering specified by \textit{dof\_numbering\_id}. 
+
+\begin{verbatim}
+// old name: procdofs_
+int m3dc1_mesh_getdofid (
+        int* /* in */ dof_numbering_id, 
+        int* /* out */ start_dof_id, 
+        int* /* out */ end_dof_id_plus_one); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function gets the starting local DOF id and ending local DOF id + 1. 
+
+\begin{verbatim}
+// old name: procdofs_
+int m3dc1_mesh_getglobdofid (
+        int* /* in */ dof_numbering_id, 
+        int* /* out */ start_glob_dof_id, 
+        int* /* out */ end_glob_dof_id_plus_one); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function gets the global start DOF id and end DOF id plus one. Each process owns a consecutive piece of DOF's ordered globally. 
+
+\begin{verbatim}
+// old name: numdofs_
+int m3dc1_mesh_getnumdof (
+        int* /* in */ dof_numbering_id, 
+        int* /* out */ num_local_dofs); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+ 
+The function gets the number of DOF's (owned and unowned) on local process in the DOF orderings specified by \textit{dof\_numbering\_id}. 
+
+\begin{verbatim}
+\\ old name: numglobaldofs_
+int m3dc1_mesh_getnumglobdof (
+        int* /* in */ dof_numbering_id, 
+        int* /* out */ num_global_dof);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function returns the global number of the DOF's specified by \textit{dof\_numbering\_id}.  
+
+\begin{verbatim}
+// old name: numprocdofs_
+int  m3dc1_mesh_getnumowndof (
+        int* /* in */ dof_numbering_id, 
+        int* /* out */ num_own_dof);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function gets the number of owned DOF's on local process. 
+
+\subsection{Mesh Improvement by adaptation}
+The functions that improve the mesh by adaptation are listed.
+\begin{verbatim}
+// old name: setsmoothfact_
+int  m3dc1_mesh_setsmoothftr (double* /* in */ fact)
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function sets the smooth factor of the size field that drives the mesh adaptation.
+
+\begin{verbatim}
+// old name: adapt_
+int  m3dc1_mesh_adapt (
+        double* /* in */ vecid, 
+        double* /* in */ psi0,  
+        double* /* in */ psil); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function adapts the mesh by the analytic size field defined in terms of  the solution field. The parameters in the analytic expression are defined in the file sizefieldParam.
+	      \textit{vecid} is is the solution field. 
+	      \textit{psi0} and \textit{psil} are two parameters to normalize the field value. 
+	      The normalized field value is $\bar{psi} = (psi - *psi0)/(*psil - *psi0)$.
+
+
+\subsection{Mesh entity}
+The functions that inquire the mesh entity (a vertex, a edge, a face or a region) are listed. The mesh entity is specified by a local ID and the dimension.
+\begin{verbatim}
+// old name: zonfac_
+int m3dc1_ent_getgeomclass ( 
+        int* /* in */ ent_dim, 
+        int* /* in */ ent_id, 
+        int* /* out */ geom_class_dim, 
+        int* /* out */ geom_class_id); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+Given entity's dimension and local id, the function gets the dimension and id of geometric entity that the mesh entity is classified on. If entity dimension and id are not valid, the error code $PUMI\_INVALID\_ENTITY\_HANDLE$ is returned.
+
+\begin{verbatim}
+// old name: functions that inquire adjacent entities
+int m3dc1_ent_getadj (
+        int* /* in */ ent_dim, 
+        int* /* in */ ent_id, 
+        int* /* in */ adj_dim,
+        int*/* inout */ adj_ent,
+        int* /* in */ adj_ent_allocated_size,
+        int* /* out */ num_adj_ent); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+Given entity's dimension and local id, and entity type for adjacency, the function gets the local ids' and the size of adjacenct entities. \emph{adj\_ent} is an array representing adjacent entitites' local id and \emph{adj\_ent\_allocated\_size} and \emph{adj\_ent\_size} represent the size of memory allocated to \emph{adj\_ent} and the size of adjacent entities, respectively. If \emph{adj\_ent\_allocated\_size} is less than \emph{adj\_ent\_size}, the error code \emph{PUMI\_BAD\_ARRAY\_SIZE} is returned. If entity dimension, id or $adj\_dim$ is not valid, the error code $PUMI\_INVALID\_ARGUMENT$ is returned. If entity's local id is not available, the error code \emph{PUMI\_FAILURE} is returned.
+	      
+\begin{verbatim}
+// old name: functions that inquire number of adjacent entities
+int m3dc1_ent_getnumadj (
+        int* /* in */ ent_dim, 
+        int* /* in */ ent_id, 
+        int* /* in */ adj_dim,
+        int* /* out */ num_adj_ent);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+Given entity's dimension and local id, and entity type for adjacency, the function gets the number of adjacenct entities. If entity dimension and id are not valid, the error code $PUMI\_INVALID\_ENTITY\_HANDLE$ is returned. If $adj\_dim$ is not valid, the error code \emph{PUMI\_INVALID\_ARGUMENT} is returned. 
+
+
+\begin{verbatim}
+// old name: entprocowner_
+int m3dc1_ent_getpartid_own (
+        int* /* in */ ent_dim, 
+        int* /* in */ ent_id, 
+        int* /* out */ owning_partid); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+Given entity's dimension and local id, the function gets the owning part id. If entity dimension and id are not valid, the error code \emph{PUMI\_INVALID\_ENTITY\_HANDLE} is returned.
+
+\begin{verbatim}
+// old name: globalidnod_
+int m3dc1_ent_getglobid (
+        int* /* in */ ent_dim, 
+        int* /* in */ ent_id, 
+        int* /* out */ glob_ent_id); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+Given entity's dimension and local id, the function gets the global id of the entity. If entity dimension and id are not valid, the error code \emph{PUMI\_INVALID\_ENTITY\_HANDLE} is returned. If entity's global id is not available, the error code \emph{PUMI\_FAILURE} is returned.
+
+
+\begin{verbatim}
+int m3dc1_ent_getnumdof (
+       int* /* in */ ent_dim, 
+       int* /* in */ ent_id, 
+       int* /* out */ num_dof);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+Given entity's dimension and local id, the function gets the number of DOF's associated with the entity.
+
+\begin{verbatim}
+// old name: entdofs_
+int m3dc1_ent_getdofid(
+        int* /* in */ dof_numbering_id, 
+        int* /* in */ ent_dim, 
+        int* /* in */ ent_id, 
+        int* /* out */ start_dof_id, 
+        int* /* out */ end_dof_id_plus_one); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+ 
+Given entity's dimension and local id, the function gets the local start DOF id \textit{start\_dof\_id} and the local end DOF id \textit{end\_dof\_id\_plus\_one} specified by \textit{dof\_numbering\_id}. 
+
+\begin{verbatim}
+// old name: globalentdofs_
+int m3dc1_ent_getglobdofid(
+        int* /* in */ dof_numbering_id, 
+        int* /* in */ ent_dim, 
+        int* /* in */ ent_id, 
+        int* /* out */ start_glob_dof_id, 
+        int* /* out */ end_glob_dof_id_plus_one); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+ 
+Given entity's dimension and local id, the function gets the starting global DOF id \textit{start\_glob\_dof\_id} and the ending global DOF id + 1 \textit{end\_glob\_dof\_id\_plus\_one} specified by \textit{dof\_numbering\_id}. 
+
+\subsection{Mesh Vertex}
+The functions that inquire the mesh vertex are listed.
+\begin{verbatim}
+// old name: xyznod_
+int m3dc1_vertex_getcoord (
+        int* /* in */ node_id , 
+        double* /* out */ coord ); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+Given local node id, the function gets the coordinate of the mesh vertex in the arrary \textit{coord}. 
+The size of \textit{coord} is 3. For a 2D mesh, the value of $coord[2]$ is 0.0. If no node exists for $node\_id$, the error code \emph{PUMI\_INVALID\_ENTITY\_HANDLE} is returned. If $adj\_dim$ is not valid, the error code \emph{PUMI\_INVALID\_ARGUMENT} is returned. 
+
+\begin{verbatim}
+// old name: nodnormalvec_
+int m3dc1_vertex_getnormvec (
+        int* /* in */ node_id, 
+        double* /* out */ xyz);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+    The function gets the normal vector for a boundary mesh vertex \textit{node\_id} defined on a 2D plane
+
+\begin{verbatim}
+// old name: nodnormalvec_
+int m3dc1_vertex_isongeombdry (int* /* in */ node_id, int* /* out */ on_geom_bdry)
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+    The function gets an integer indicating whether the input node is on the geometric boundary (1) or not (0).
+
+\subsection{Field}
+The functions that creates and perform the parallel assembly and synchronization of  a field are listed. 
+\begin{verbatim}
+// old name: createppplvec_
+int m3dc1_field_create (
+        double* /* in */ field_id, 
+        int* /* in */ dof_numbering_id, 
+        int* /* in */ field_type); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function creates a field (vector) with ID \textit{field\_id} from the DOF ordering \textit{dof\_numbering\_id}. Use enumberation type \emph{m3dc1\_field\_type} for \textit{field\_type}. Note the  memory for the field is allocated and freed by the Fortran driver.
+
+\begin{verbatim}
+// old name: deleteppplvec_
+int m3dc1_field_delete (double* /* out */ field_id); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function deletes the field specified by \textit{field\_id}.
+
+\begin{verbatim}
+// old name: checkppplveccreated_
+int m3dc1_field_exist(
+        double* /* in */ field_id, 
+        int* /* out */ iscreated);/
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function checks if the field specified by \textit{field\_id} is created.
+
+\begin{verbatim}
+int m3dc1_field_sync (double* /* in */ field_id); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+When the values of the DOF's are obtained by  integration over elements, the values are incomplete at the part boundary. The function performs parallel assembly and synchronize of the field on the part boundary by sending the field of non-owned mesh entities to the owner mesh entities. The values are summed up at the owner entities and sent back to the non-owned entities.  
+
+\begin{verbatim}
+// old name: updatesharedppplvecvals_;
+int m3dc1_field_sync (double* /* in */ id); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function performs synchronize of the field on the part boundary. The field values of the owner nodes are sent to the non-owned nodes and the values of the field on the part boundary is synchronized to have the value.  
+
+\begin{verbatim}
+// old name: updateids_
+int m3dc1_field_changeid (
+        double* /* in */ old_field_id, 
+        double* /* in */ new_field_id); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function updates the field ID.
+
+\begin{verbatim}
+// old name: sum_vec_planes_
+int m3dc1_field_getsumofplane (double* /* in */ thevec); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function sums up the values of the field over the planes. The field of the mesh nodes with same $(R,Z)$ coordinate on different planes are summed. 
+
+\subsection{Solution Transfer}
+The functions that transfer the solution fields from the original mesh to the new mesh during mesh adaptation are listed. 
+\begin{verbatim}
+// old name: initSolutionTransfer_
+int m3dc1_fieldtransfer_init(int* /* in */ option); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function initiates the solution transfer before mesh is adapted.
+
+\begin{verbatim}
+// old name: registerFieldTransfer_
+int m3dc1_fieldtransfer_register ( 
+        double* /* in */ inputField, 
+        const char* /* in */ key); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function register the field that needs to be transferred during mesh adaptation.
+
+\begin{verbatim}
+// old name: finalizeSolutionTransfer_
+int m3dc1_fieldtransfer_finalize ();
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function finalizes the field  transfer after mesh adaptation.
+
+\begin{verbatim}
+// old name: getFieldTransfer_
+int m3dc1_fieldtransfer_get (
+        double* /* out */ inputField, 
+        const char* /* in */ key); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+The function returns the transfered field on the adapted mesh. 
+\begin{verbatim}
+// old name: deleteSolutionTransfer_
+int m3dc1_fieldtransfer_delete(); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function deletes the field transfer object.
+\subsection{Matrix}
+The functions that form and solve the global discrete equation are listed.
+\begin{verbatim}
+// old name: zerosuperlumatrix_ zeropetscmatrix_ zeromultiplymatrix_
+int m3dc1_matrix_init (
+        int* /* in */ matrixid,
+        int* /* in */ matrixType,
+        int* /* in */ valtype,  
+        int* /* in */ dof_numbering_id); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function initiates  the matrix with ID \textit{matrixid} that uses the DOF ordering \textit{dof\_numbering\_id} 
+	       for use with the matrix.
+	       matrixType indicates the purpose of the matrix. matrixType=0 for matrix-vector multiplication, matrixType=1 for superlu solver, matrixType=2 for petsc solver.
+	       If the real numbers are 	used,  set \textit{type} to 0.
+	       If the complex numbers are used,  set \textit{type} to 1. 
+	       If the matrix has already been created then it just cleans out the matrix.
+
+	       
+\begin{verbatim}
+// old name: insertval_
+int m3dc1_matrix_insertval (
+        int* /* in */ matrixid, 
+        double* /* in */ val, 
+        int* /* in */ valtype, 
+        int* /* in */ row,
+        int* /* in */ column, 
+        int* /* in */ operation); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function inserts \textit{val} to matrix \textit{matrixid}
+	       at (\textit{row},\textit{column}).
+	       \textit{row} and \textit{column} come from the DOF ordering associated with the matrix.
+	       The type of value to be inserted can be real (\textit{valtype} =0) or complex (\textit{valtype}=1).
+	       A real type can be inserted into a complex matrix
+	       but a complex type cannot be inserted into a real matrix.
+	       If \textit{operation} is zero then the value overwrites any existing value,
+	       otherwise the value is to be added to the existing value.
+
+\begin{verbatim}
+// old name: globalinsertval_
+int m3dc1_matrix_globalinsertval (
+        int* /* in */ matrixid, 
+        double* /* in */ val, 
+        int* /* in */ valtype, 
+        int* /* in */ row,
+        int* /* in */ column, 
+        int* /* in */ operation); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function inserts \textit{val} into matrix \textit{matrixid} at
+	       (\textit{globalrow}, \textit{globalcolumn}) in the matrix 
+	       where \textit{globalrow} and \textit{globalcolumn} are defined as the global labels of the DOF.
+	       \textit{globalrow} needs to correspond to a local DOF.
+	        \textit{globalcolumn} can either  correspond to a local DOF or a node locate on the geometric boundary.
+
+\begin{verbatim}
+int m3dc1_matrix_setdiribc(
+        int* /* in */ matrixid, 
+        int* /* in */ row);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+	       
+The function zeroes out all off-diagonal values in the \textit{row}  of  matrix \textit{matrixid}
+	       and sets the diagonal value to be one.
+	       The operation is carried out during finalizing the matrix, 
+	       This function will overwrite other insertion operations to the row.
+	       For complex-valued arrays,
+	       the real part of the diagonal is set to be one and the imaginary part is set to zero.
+	       This function should be called on all processes that use the DOF number associated with the matrix row.
+
+\begin{verbatim}
+int m3dc1_matrix_setgeneralbc_ (
+        int* /* in */ matrixid, 
+        int* /* in */ row, 
+        int* /* in */ numvals,
+        int* /* in */ columninfo, 
+        double* /* in */ vals, 
+        int* valtype);
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+ The function sets multiple values for the row of \textit{matrixid}.
+	       The  number of values to be inserted is \textit{numvals}. 
+	       \textit{columninfo} specifies which columns to set the values and 
+	       and \textit{vals} specifies the values to be set
+	       which must be in the same order as the \textit{columninfo} array.
+	       The type of values to be inserted can be real (\textit{type} =0) or complex (\textit{type} =1).
+	       If only real values are inserted into a complex matrix,
+	       then the corresponding imaginary parts are set to zero. 
+	       The operation is carried out during finalizing the matrix, 
+	       This function will overwrite other insertion operations to the row.
+	       This function should be called on all processes that use the DOF number associated with the matrix row.
+
+\begin{verbatim}
+// old name: finalizematrix_
+int m3dc1_matrix_finalize (int* /* in */ matrixid); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function finalizes \textit{matrixid} such that no more values can be inserted into the matrix 
+	       and no more boundary conditions can be applied to the matrix.
+
+\begin{verbatim}
+// old name: solveSysEqu_
+int m3dc1_matrix_solve (
+        int* /* in */ matrixid, 
+        double* /* inout */ rhs_sol, 
+        int* /* out */ ier); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+ 
+ The function solves the linear systems of equation $Ax=b$. The matrix $A$ is created by \textit{m3dc1\_matrix\_initsuperlu} or \textit{m3dc1\_matrix\_initpetsc} , 
+The input right-hand-side vector \textit{rhs\_sol} is overwritten with the solution.
+	       If \textit{ier} is non-zero there were mistakes returned by the solver. 
+\begin{verbatim}
+// old name: matrixvectormult_
+int m3dc1_matrix_multiplyvec (
+        int* /* in */ matrixid, 
+        double* /* in */ inputvecid, 
+        double* /* out */ outputvecid); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function performs the matrix-vector multiplication. Matrix
+\textit{matrixid} is created by \textit{m3dc1\_matrix\_initmultiply}.
+	       If either \textit{matrixid} or \textit{inputvecid} is complex-valued,
+	       \textit{outputvecid} must also be complex-valued.
+
+\begin{verbatim}
+// old name: deletematrix_
+int m3dc1_matrix_delete (int* /* in */ matrixid); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function deletes the matrix.
+
+\begin{verbatim}
+// old name: writematrixtofile_
+int m3dc1_matrix_write (
+        int* /* in */ matrixid, 
+        int* /* in */ fileid, 
+        int* /* in */ option); 
+\end{verbatim}\vspace{-.5cm}\hspace{1cm}
+
+The function writes the matrix to the file. If \textit{option==1}, the imaginary and real parts of the matrix are outputted to separated files.
+
+
+
