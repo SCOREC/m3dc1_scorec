@@ -1,9 +1,11 @@
-/usr/local/cmake/2.8.0/bin/cmake .. \
-  -DCMAKE_C_COMPILER="/usr/local/openmpi/latest/bin/mpicc" \
-  -DCMAKE_CXX_COMPILER="/usr/local/openmpi/latest/bin/mpicxx" \
-  -DCMAKE_Fortran_COMPILER="/usr/local/openmpi/latest/bin/mpif90" \
-  -DCMAKE_C_FLAGS=" -g -O2 -DDEBUG -I/lore/fzhang/petsc-real/petsc-3.5.1/include" \
-  -DCMAKE_CXX_FLAGS=" -g -O2 -DDEBUG -I/lore/fzhang/petsc-real/petsc-3.5.1/include" \
+#!/bin/bash
+
+cmake .. \
+  -DCMAKE_C_COMPILER="mpicc" \
+  -DCMAKE_CXX_COMPILER="mpicxx" \
+  -DCMAKE_Fortran_COMPILER="mpif90" \
+  -DCMAKE_C_FLAGS=" -g -O2" \
+  -DCMAKE_CXX_FLAGS=" -g -O2" \
   -DCMAKE_Fortran_FLAGS="-fpic "\
   -DENABLE_COMPLEX=OFF \
   -DSCOREC_INCLUDE_DIR="/users/seol/develop/include" \
@@ -18,14 +20,5 @@
   -DENABLE_MESHGEN=OFF \
   -DSIMMETRIX_INCLUDE_DIR=/net/common/meshSim/latest/include \
   -DSIMMETRIX_LIB_DIR=/net/common/meshSim/latest/lib/x64_rhel5_gcc41 \
-  -DENABLE_TRILINOS=ON \
-  -DTRILINOS_INCLUDE_DIR="/usr/local/trilinos/latest/include" \
-  -DTRILINOS_LIB_DIR="/usr/local/trilinos/latest/lib" \
-  -DLAPACK_LIB_DIR="/users/seol/public/lib" \
-  -DBOOST_LIB_DIR="/users/granzb/lib" \
-  -DSTDCPP_LIBRARY="/users/granzb/lib64/libstdc++.a" \
-  -DNETCDF_LIBRARY="/usr/lib64/libnetcdf.a" \
   -DENABLE_TESTING=ON \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_INSTALL_PREFIX="/users/seol/develop"
-
+  -DCMAKE_INSTALL_PREFIX="$PWD/../install"
