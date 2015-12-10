@@ -43,16 +43,18 @@ if (NOT EXISTS "${METIS_LIBRARY}")
 endif()
 
 set(SCOREC_LIBS "")
+
 set(SCOREC_LIB_NAMES
-  pcu  
-  gmi
   ma
+  spr
+  parma
+  apf_zoltan
   mds
   apf
-  apf_zoltan
-  parma
-  ph
-  spr
+  lion
+  mth
+  gmi
+  pcu  
   )
 
 scorecLibCheck("${SCOREC_LIB_NAMES}" TRUE)
