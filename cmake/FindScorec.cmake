@@ -29,17 +29,17 @@ endmacro(scorecLibCheck)
 
 find_library(ZOLTAN_LIBRARY zoltan)
 if (NOT EXISTS "${ZOLTAN_LIBRARY}")
-  message(FATAL ERROR "ZOLTAN library not found")
+  message(FATAL_ERROR "ZOLTAN library not found")
 endif()
 
-find_library(METIS_LIBRARY parmetis)
+find_library(PARMETIS_LIBRARY parmetis)
 if (NOT EXISTS "${PARMETIS_LIBRARY}")
-  message(FATAL ERROR "PARMETIS library not found")
+  message(FATAL_ERROR "PARMETIS library not found")
 endif()
 
 find_library(METIS_LIBRARY metis)
 if (NOT EXISTS "${METIS_LIBRARY}")
-  message(FATAL ERROR "METIS library not found")
+  message(FATAL_ERROR "METIS library not found")
 endif()
 
 set(SCOREC_LIBS "")
