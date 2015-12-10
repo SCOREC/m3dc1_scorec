@@ -38,7 +38,7 @@ set(PETSC_LIB_NAMES
   mumps_common
   pord
   scalapack
-  superlu_dist_3.3
+  superlu_dist_4.1
   flapack
   fblas
   ssl
