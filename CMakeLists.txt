@@ -21,31 +21,6 @@ endif (NOT CMAKE_BUILD_TYPE)
 # FFLAGS depend on the compiler
 get_filename_component (Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
 message (Fortran_COMPILER_NAME = ${Fortran_COMPILER_NAME})
-message (HOST = $ENV{host})
-
-if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-  # gfortran
-  set (CMAKE_Fortran_FLAGS_RELEASE "-funroll-all-loops -fno-f2c -O3")
-  set (CMAKE_Fortran_FLAGS_DEBUG   "-fno-f2c -O0 -g")
-elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
-  # ifort (untested)
-  set (CMAKE_Fortran_FLAGS_RELEASE "-f77rtl -O3")
-  set (CMAKE_Fortran_FLAGS_DEBUG   "-f77rtl -O0 -g")
-elseif (Fortran_COMPILER_NAME MATCHES "g77")
-  # g77
-  set (CMAKE_Fortran_FLAGS_RELEASE "-funroll-all-loops -fno-f2c -O3 -m32")
-  set (CMAKE_Fortran_FLAGS_DEBUG   "-fno-f2c -O0 -g -m32")
-elseif (Fortran_COMPILER_NAME MATCHES "mpif90")
-  if ($ENV{host} MATCHES "avatar")
-    set (CMAKE_Fortran_FLAGS "-O2 -g -c -fdefault-real-8 -Wall -cpp")
-  else()
-    set (CMAKE_Fortran_FLAGS "-O2 -g -c -r8 -implicitnone -fpp -warn all -qopt-report=0 -qopt-report-phase=vec -gen-interfaces")
-  endif()
-else (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-  message ("No optimized Fortran compiler flags are known, we just try -O2...")
-  set (CMAKE_Fortran_FLAGS_RELEASE "-O2")
-  set (CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
-endif (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 
 #unless building shared libs, then select static libs 
 # if both static and shared libs are available 
@@ -126,12 +101,13 @@ set(CMAKE_MODULE_PATH
    ${CMAKE_MODULE_PATH} 
    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
-find_package(Scorec QUIET REQUIRED)
-include_directories(${SCOREC_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/api)
-set(DEP_LIBS ${DEP_LIBS} ${SCOREC_LIBRARIES} )
 set(TARGET_LIB_NAME m3dc1_scorec)
+
+find_package(Scorec QUIET REQUIRED)
+include_directories(${SCOREC_INCLUDE_DIRS})
+set(DEP_LIBS ${DEP_LIBS} ${SCOREC_LIBRARIES} )
 
 if (ENABLE_MESHGEN)
 find_package(Simmetrix QUIET REQUIRED)
@@ -161,11 +137,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DPETSC_USE_COMPLEX")
 set(TARGET_LIB_NAME ${TARGET_LIB_NAME}_complex)
 endif()
 find_package(Petsc QUIET REQUIRED)
-find_package(Hdf5 QUIET REQUIRED)
 include_directories(${PETSC_INCLUDE_DIRS})
-include_directories(${HDF5_INCLUDE_DIRS})
 set(DEP_LIBS ${DEP_LIBS} ${PETSC_LIBRARIES} )
-set(DEP_LIBS ${DEP_LIBS} ${HDF5_LIBRARIES} )
 endif()
 
 add_library(${TARGET_LIB_NAME} ${SOURCES})
