@@ -21,6 +21,7 @@
 #include <utility>
 #include <string.h>
 #include <assert.h>
+#include <iostream>
 
 int separatrixLoop=-1, innerWallLoop=-1, outerWallLoop=-1, vacuumLoop=-1;
 std::map< int, std::vector<int> > loopContainer;
