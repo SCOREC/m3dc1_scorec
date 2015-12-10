@@ -20,6 +20,7 @@
 #include <vector>
 #include <set>
 #include <string.h>
+#include <iostream>
 
 using namespace apf;
 
