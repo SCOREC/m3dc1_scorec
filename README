@@ -1,0 +1,60 @@
+This file describes the setup process for this repository
+on SCOREC machines.
+
+(0) make a directory for your M3DC1 work,
+    we will call it PREFIX.
+
+mkdir -p $PREFIX
+cd $PREFIX
+
+(1) clone this repository:
+
+git clone https://github.com/SCOREC/m3dc1_scorec m3dc1_scorec
+
+(2) setup your environment:
+
+source m3dc1_scorec/scorec_build/setup.sh
+
+(3) clone the SCOREC core:
+
+git clone https://github.com/SCOREC/core core
+
+(4) build the SCOREC core:
+
+cd core
+mkdir build
+cd build
+../../m3dc1_scorec/scorec_build/core_config.sh
+make install -j 4
+cd ../..
+
+(5) build this repository (the "interface")
+
+cd m3dc1_scorec
+mkdir build
+cd build
+../scorec_build/m3dc1_scorec_config.sh
+make install -j 4
+cd ../..
+
+(6) clone the solver:
+
+git clone https://github.com/SCOREC/m3dc1 m3dc1
+
+(7) build the solver:
+
+cd m3dc1
+cp scorec.mk `hostname`.mk
+make
+cd ..
+
+(8) get the test files
+
+tar xzvf /lore/dibanez/m3dc1/m3dc1_tests.tgz
+
+(9) run the test. you may need to modify
+the path to the executable, I'm not positive
+where the "25" comes from.
+
+cd tests/2d/2p
+mpirun -np 2 ../../../m3dc1/_jenga-25/m3dc1_2d &> log
