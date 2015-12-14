@@ -1,5 +1,5 @@
-#define m3dc1_scorec_init m3dc1_domain_init_
-#define m3dc1_scorec_finalize m3dc1_domain_finalize_
+#define m3dc1_scorec_init m3dc1_scorec_init_
+#define m3dc1_scorec_finalize m3dc1_scorec_finalize_
 #define m3dc1_plane_setnum m3dc1_plane_setnum_
 #define m3dc1_plane_getnum m3dc1_plane_getnum_
 #define m3dc1_plane_getid m3dc1_plane_getid_
