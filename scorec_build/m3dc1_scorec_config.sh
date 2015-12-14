@@ -8,5 +8,6 @@ cmake .. \
   -DCMAKE_CXX_FLAGS="-g -O2" \
   -DCMAKE_Fortran_FLAGS="-O2 -g -c -fdefault-real-8 -Wall -cpp"\
   -DENABLE_COMPLEX=OFF \
+  -DENABLE_MESHGEN=OFF \
   -DENABLE_TESTING=ON \
   -DCMAKE_INSTALL_PREFIX="$PWD/../install"

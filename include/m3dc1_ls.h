@@ -7,11 +7,10 @@
   BSD license as described in the LICENSE file in the top-level directory.
  
 *******************************************************************************/
-
+#ifndef M3DC1_MESHGEN
 #ifdef M3DC1_TRILINOS
 #ifndef M3DC1_LS_H
 #define M3DC1_LS_H
-
 #include <map>
 #include "apf.h"
 #include "m3dc1_scorec.h"
@@ -65,6 +64,6 @@ public:
 private:
   static m3dc1_ls* _instance;
 };
-
 #endif
-#endif //ifdef M3DC1_TRILINOS
+#endif
+#endif //#ifndef M3DC1_MESHGEN

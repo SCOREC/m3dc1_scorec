@@ -14,6 +14,7 @@
 #include "m3dc1_field.h"
 #include <mpi.h>
 #include <PCU.h>
+#include "gmi_null.h" // FIXME: should be deleted later on since it's added temporarily for null model
 #include <gmi_analytic.h>
 #include <map>
 #include "apfMDS.h"
@@ -1839,6 +1840,7 @@ int m3dc1_ent_getdofdata (int* /* in */ ent_dim, int* /* in */ ent_id, FieldID* 
   return M3DC1_SUCCESS;
 }
 
+#ifndef M3DC1_MESHGEN
 /** matrix and solver functions */
 std::map<int, int> matHit;
 int getMatHit(int id) { return matHit[id];};
@@ -2619,6 +2621,8 @@ int adapt_by_error_field (double * errorData, double * errorAimed, int * max_ada
   }
  destroyField(sizeField);
 }
+
+#endif // #ifndef M3DC1_MESHGEN
 
 int m3dc1_field_printcompnorm(FieldID* /* in */ field_id, char* info)
 {

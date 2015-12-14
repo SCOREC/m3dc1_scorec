@@ -7,7 +7,7 @@
   BSD license as described in the LICENSE file in the top-level directory.
  
 *******************************************************************************/
-
+#ifndef M3DC1_MESHGEN
 #ifdef M3DC1_TRILINOS
 #include "m3dc1_ls.h"
 #include "m3dc1_scorec.h"
@@ -173,5 +173,5 @@ m3dc1_epetra::~m3dc1_epetra()
   delete _overlap_map;
   delete _owned_map;
 }
-#endif //#ifdef M3DC1_TRILINOS
-
+#endif
+#endif //#ifndef M3DC1_MESHGEN

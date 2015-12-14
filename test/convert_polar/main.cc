@@ -8,6 +8,34 @@
 #include <assert.h>
 #include "m3dc1_scorec.h"
 #include "m3dc1_model.h"
+#ifdef M3DC1_MESHGEN
+#include "SimUtil.h"
+#include "SimModel.h"
+#include "SimError.h"
+#include "SimAdvModel.h"
+#include "MeshSim.h"
+#include "BSpline.h"
+void save_sim_model ();
+char simLic[50] = "/net/common/meshSim/license/license.txt";
+void messageHandler(int type, const char *msg)
+{
+  switch (type) {
+  case Sim_InfoMsg:
+    printf("Info: %s\n",msg);
+    break;
+  case Sim_DebugMsg:
+    printf("Debug: %s\n",msg);
+    break;
+  case Sim_WarningMsg:
+    printf("Warning: %s\n",msg);
+    break;
+  case Sim_ErrorMsg:
+    printf("Error: %s\n",msg);
+    break;
+  }
+  return;
+}
+#endif
 
 using namespace std;
 void create_edge(apf::Mesh2* m, vector<int>& g_edge_ids, apf::ModelEntity* g_face, apf::MeshEntity** ev)
@@ -312,6 +340,10 @@ int main( int argc, char** argv)
   // white model and mesh file
   cout<<"> convert_polar: writing model in PUMI-readable \"model.txt\"\n";
   save_model("model.txt");
+#ifdef M3DC1_MESHGEN
+  cout<<"> convert_polar: writing model in Simmetrix-readable \"model.smd\"\n";
+  save_sim_model();
+#endif
   cout<<"> convert_polar: writing mesh in PUMI-readable \"mesh.smb\"\n";
   m->writeNative("mesh.smb");
   cout<<"> convert_polar: writing mesh in Paraview data files\n";
@@ -349,3 +381,9 @@ int main( int argc, char** argv)
   return 0;
 }
 
+#ifdef M3DC1_MESHGEN
+void save_sim_model ()
+{
+// contact seols@rpi.edu to get the code
+}
+#endif

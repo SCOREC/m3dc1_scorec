@@ -21,7 +21,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 typedef int FieldID;
 enum m3dc1_coord_system { /*0*/ M3DC1_RZPHI,  // default
                           /*1*/ M3DC1_XYZ};
@@ -152,6 +151,7 @@ int m3dc1_ent_setdofdata (int* /* in */ ent_dim, int* /* in */ ent_id, FieldID* 
 t */ num_dof, double* dof_data);
 int m3dc1_ent_getdofdata (int* /* in */ ent_dim, int* /* in */ ent_id, FieldID* field_id, int* /* out */ num_dof, double* dof_data);
 
+#ifndef M3DC1_MESHGEN
 /** matrix and solver functions with PETSc */
 int m3dc1_matrix_create(int* matrix_id, int* matrix_type, int* scalar_type, FieldID* field_id); //zerosuperlumatrix_
 int m3dc1_matrix_freeze(int* matrix_id); //finalizematrix_
@@ -195,6 +195,7 @@ int m3dc1_matrix_print(int* matrix_id);
 int adapt_by_field (int * fieldId, double* psi0, double * psil);
 int set_adapt_p (double * pp);
 int adapt_by_error_field (double * errorField, double * errorAimed, int* max_node, int* option); // option 0: local error control; 1 global
+#endif // #ifndef M3DC1_MESHGEN
 
 // for adaptation
 int set_mesh_size_bound (double* abs_size, double * rel_size);
@@ -202,7 +203,6 @@ int set_adapt_smooth_factor (double* fac);
 int output_face_data (int * size, double * data, char * vtkfile);
 int sum_edge_data (double * data, int * size);
 int get_node_error_from_elm (double * elm_data, int * size, double* nod_data);
-
 #ifdef __cplusplus
 }
 #endif

@@ -191,6 +191,33 @@ int main( int argc, char** argv)
   m3dc1_mesh_getnument (&vertex_dim, &num_vertex);
   m3dc1_mesh_getnumownent (&vertex_dim, &num_own_vertex);
   m3dc1_mesh_getnument(&elem_dim, &num_elem);
+#if 0
+  for(int i=0; i<num_vertex; i++)
+  {
+    double xyz[3];
+    m3dc1_node_getcoord(&i, xyz);
+    int ent_dim=0;
+    int geom_class_dim;
+    int geom_class_id;
+    double normal[3];
+    double curv;
+    m3dc1_ent_getgeomclass ( &ent_dim, &i, &geom_class_dim, &geom_class_id);
+    int bdy;
+    m3dc1_node_isongeombdry(&i, &bdy);
+    if(bdy) assert(geom_class_dim<2);
+    if(geom_class_dim<2)
+    {
+      assert(bdy);
+      m3dc1_node_getnormvec (&i, normal);
+      m3dc1_node_getcurv (&i, &curv);
+      cout<<" rank "<<PCU_Comm_Self()<<" node "<<i<<"("<<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<") geo class "<<geom_class_dim<<" "<<geom_class_id<<" normal curv "<<normal[0]<<" "<<normal[1]<<" "<<curv<<endl;
+    }
+    else
+      cout<<" rank "<<PCU_Comm_Self()<<" node "<<i<<"("<<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<") geo class "<<geom_class_dim<<" "<<geom_class_id<<endl;
+    // 2D mesh, z component =0
+    if(num_plane==1) assert(AlmostEqualDoubles(xyz[2], 0, 1e-6, 1e-6));
+  }
+#endif
 
   int value_type[] = {scalar_type,scalar_type};
 
