@@ -7,10 +7,10 @@
   BSD license as described in the LICENSE file in the top-level directory.
  
 *******************************************************************************/
-#ifndef M3DC1_MESHGEN
+
 #ifndef M3DC1_SOLVER_H
 #define M3DC1_SOLVER_H
-//#include "superlu_ddefs.h" // gridinfo_t
+
 #include "apf.h"
 #include "petscksp.h"
 #include "apfNumbering.h"
@@ -115,4 +115,3 @@ private:
 };
 
 #endif
-#endif //#ifndef M3DC1_MESHGEN

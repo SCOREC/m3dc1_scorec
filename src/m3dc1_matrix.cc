@@ -7,7 +7,7 @@
   BSD license as described in the LICENSE file in the top-level directory.
  
 *******************************************************************************/
-#ifndef M3DC1_MESHGEN
+
 #include "m3dc1_matrix.h"
 #include "m3dc1_scorec.h"
 #include "apf.h"
@@ -959,9 +959,6 @@ int copyField2PetscVec(FieldID field_id, Vec& petscVec, int scalar_type)
       ierr = VecSetValue(petscVec, start_global_dof_id+i, value, INSERT_VALUES);
       CHKERRQ(ierr);
     }
-    //if(!PCU_Comm_Self()) 
-    //for(int i=0; i<num_dof; i++) std::cout<<PCU_Comm_Self()<<" copy Field "<<field_id<<" to PetscVec inode "<<inode<<" "<<start_global_dof_id<<" "<<i<<" dof "<<dof_data[i]<<std::endl;
-
   }
   assert(nodeCounter==num_own_ent);
   ierr=VecAssemblyEnd(petscVec);
@@ -1022,8 +1019,6 @@ int copyPetscVec2Field(Vec& petscVec, FieldID field_id, int scalar_type)
       }
     }
     m3dc1_ent_setdofdata (&vertex_type, &inode, &field_id, &dofPerEnt, &dof_data[0]);
-    //if(!PCU_Comm_Self()) 
-    //for(int i=0; i<num_dof; i++) std::cout<<PCU_Comm_Self()<<" copy PetscVec2Field "<<field_id<<" inode "<<inode<<" "<<start_global_dof_id<<" "<<i<<" dof "<<dof_data[i]<<std::endl;
   }
   m3dc1_field_sync(&field_id);
   return 0;
@@ -1162,6 +1157,7 @@ int m3dc1_matrix :: write (const char* file_name)
   ierr = MatView(*A, lab); CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&lab); CHKERRQ(ierr);
 }
+
 int m3dc1_matrix :: printInfo()
 {
   MatInfo info;
@@ -1173,4 +1169,4 @@ int m3dc1_matrix :: printInfo()
   MatStashGetInfo(*A,&nstash,&reallocs,&bnstash,&breallocs);
   std::cout<<"\t nstash, reallocs, bnstash, breallocs "<<nstash<<" "<<reallocs<<" "<<bnstash<<" "<<breallocs<<std::endl;
 }
-#endif //#ifndef M3DC1_MESHGEN
+
