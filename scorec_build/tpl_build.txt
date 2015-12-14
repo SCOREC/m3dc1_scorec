@@ -1,0 +1,27 @@
+1) build parmetis:
+
+tar xzvf /lore/dibanez/m3dc1/parmetis.tgz
+cd parmetis-4.0.3/
+cd metis
+configure and `make install` with
+https://github.com/SCOREC/m3dc1_scorec/blob/master/scorec_build/metis_config.sh
+cd ..
+configure and `make install` with
+https://github.com/SCOREC/m3dc1_scorec/blob/master/scorec_build/parmetis_config.sh
+cd ..
+
+2) build zoltan
+
+tar xzvf /lore/dibanez/m3dc1/zoltan.tgz
+cd Zoltan_v3.8/
+mkdir build
+cd build
+configure and `make install` with
+https://github.com/SCOREC/m3dc1_scorec/blob/master/scorec_build/zoltan_config.sh
+
+3) build petsc
+
+tar xzvf /lore/dibanez/m3dc1/petsc-lite.tgz
+cd petsc-3.6.3/
+run this script and follow its directions about `make`:
+https://github.com/SCOREC/m3dc1_scorec/blob/master/scorec_build/petsc_config.sh
