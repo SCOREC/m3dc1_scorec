@@ -46,7 +46,7 @@ git clone https://github.com/SCOREC/m3dc1 m3dc1
 (7) build the solver:
 
 cd m3dc1
-cp scorec.mk `hostname`.mk
+cp scorec_dan.mk `hostname`.mk
 make
 cd ..
 
