@@ -48,7 +48,6 @@ set(SCOREC_LIB_NAMES
   ma
   spr
   parma
-  apf_omega_h
   apf_zoltan
   mds
   apf
@@ -58,6 +57,13 @@ set(SCOREC_LIB_NAMES
   pcu
   )
 
+if(ENABLE_OMEGA_H)
+  set(SCOREC_LIB_NAMES
+    ${SCOREC_LIB_NAMES}
+    apf_omega_h
+    )
+endif()
+  
 scorecLibCheck("${SCOREC_LIB_NAMES}" TRUE)
 
 find_path(SCOREC_INCLUDE_DIR 
