@@ -48,13 +48,14 @@ set(SCOREC_LIB_NAMES
   ma
   spr
   parma
+  apf_omega_h
   apf_zoltan
   mds
   apf
   lion
   mth
   gmi
-  pcu  
+  pcu
   )
 
 scorecLibCheck("${SCOREC_LIB_NAMES}" TRUE)
