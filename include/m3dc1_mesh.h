@@ -46,6 +46,8 @@ public:
 
   // data
   apf::Mesh2* mesh;
+  apf::Mesh2* ghosted_mesh;
+  int ghost_nlayers;
 
   int ordering_opt;
 

@@ -23,6 +23,7 @@
 #include "m3dc1_slnTransfer.h"
 #include "m3dc1_sizeField.h"
 #include "ReducedQuinticImplicit.h"
+#include "apfOmega_h.h"
 
 bool m3dc1_double_isequal(double A, double B)
 {
@@ -49,6 +50,19 @@ int m3dc1_scorec_init()
 //*******************************************************
 { 
   PCU_Comm_Init();
+
+  /*
+  int i, processid = getpid();
+  if (!PCU_Comm_Self())
+  {
+    std::cout<<"Proc "<<PCU_Comm_Self()<<">> pid "<<processid<<" Enter any digit...\n";
+    std::cin>>i;
+  }
+  else
+    std::cout<<"Proc "<<PCU_Comm_Self()<<">> pid "<<processid<<" Waiting...\n";
+  MPI_Barrier(MPI_COMM_WORLD);
+  */
+  
   m3dc1_model :: instance()-> model = gmi_make_analytic();
   return M3DC1_SUCCESS; 
 }
@@ -298,6 +312,16 @@ void clearTags(apf::Mesh* m, apf::MeshTag* t) {
   apf::removeTagFromDimension(m, t, m->getDimension());
 }
 
+
+//*******************************************************
+int m3dc1_ghost_setnlayers(int* nlayers)
+//*******************************************************
+{
+  assert(nlayers>=0);
+  m3dc1_mesh::instance()->ghost_nlayers = *nlayers;
+  return M3DC1_SUCCESS;
+}
+
 //*******************************************************
 int m3dc1_mesh_load(char* mesh_file)
 //*******************************************************
@@ -343,8 +367,23 @@ int m3dc1_mesh_load(char* mesh_file)
         apf::removeTagFromDimension(mesh, tags[i], idim);
       mesh->destroyTag(tags[i]);
     }
+
+    // Set up ghosted mesh via omega_h
+    osh_t osh_mesh = osh::fromAPF(m3dc1_mesh::instance()->mesh);
+
+    // Set default number of ghost layers
+    if (m3dc1_mesh::instance()->ghost_nlayers == 0)
+      m3dc1_mesh::instance()->ghost_nlayers = 1;
+    
+    osh_ghost(&osh_mesh, m3dc1_mesh::instance()->ghost_nlayers);
+    m3dc1_mesh::instance()->ghosted_mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, osh_dim(osh_mesh), false);
+    osh::toAPF(osh_mesh, m3dc1_mesh::instance()->ghosted_mesh);
+    osh_free(osh_mesh);
   } else {
     m3dc1_mesh::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
+    m3dc1_mesh::instance()->ghosted_mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
+    // m3dc1_mesh::instance()->ghosted_mesh->verify();    // For testing
+
   }
   m3dc1_mesh::instance()->initialize();
   return M3DC1_SUCCESS;
