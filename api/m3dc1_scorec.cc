@@ -11,6 +11,7 @@
 #include "m3dc1_matrix.h"
 #include "m3dc1_model.h"
 #include "m3dc1_mesh.h"
+#include "m3dc1_ghost.h"
 #include "m3dc1_field.h"
 #include <mpi.h>
 #include <PCU.h>
@@ -312,16 +313,6 @@ void clearTags(apf::Mesh* m, apf::MeshTag* t) {
   apf::removeTagFromDimension(m, t, m->getDimension());
 }
 
-
-//*******************************************************
-int m3dc1_ghost_setnlayers(int* nlayers)
-//*******************************************************
-{
-  assert(nlayers>=0);
-  m3dc1_mesh::instance()->ghost_nlayers = *nlayers;
-  return M3DC1_SUCCESS;
-}
-
 //*******************************************************
 int m3dc1_mesh_load(char* mesh_file)
 //*******************************************************
@@ -367,25 +358,40 @@ int m3dc1_mesh_load(char* mesh_file)
         apf::removeTagFromDimension(mesh, tags[i], idim);
       mesh->destroyTag(tags[i]);
     }
+  }
+  else {
+    m3dc1_mesh::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
+  }
+  m3dc1_mesh::instance()->initialize();
+  return M3DC1_SUCCESS;
+}
 
+//*******************************************************
+int m3dc1_ghost_load(int* nlayers)
+//*******************************************************
+{ 
+  if (m3dc1_model::instance()->local_planeid == 0){
+    assert(nlayers>0);
+    m3dc1_ghost::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
+     m3dc1_ghost::instance()->nlayers = *nlayers;
+    
     // Set up ghosted mesh via omega_h
     osh_t osh_mesh = osh::fromAPF(m3dc1_mesh::instance()->mesh);
 
     // Set default number of ghost layers
-    if (m3dc1_mesh::instance()->ghost_nlayers == 0)
-      m3dc1_mesh::instance()->ghost_nlayers = 1;
+    /*if (m3dc1_ghost::instance()->nlayers == 0)
+      m3dc1_ghost::instance()->nlayers = 1;*/
     
-    osh_ghost(&osh_mesh, m3dc1_mesh::instance()->ghost_nlayers);
-    m3dc1_mesh::instance()->ghosted_mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, osh_dim(osh_mesh), false);
-    osh::toAPF(osh_mesh, m3dc1_mesh::instance()->ghosted_mesh);
+    osh_ghost(&osh_mesh, m3dc1_ghost::instance()->nlayers);
+    //m3dc1_ghost::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, osh_dim(osh_mesh), false);
+    osh::toAPF(osh_mesh, m3dc1_ghost::instance()->mesh);
     osh_free(osh_mesh);
   } else {
-    m3dc1_mesh::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
-    m3dc1_mesh::instance()->ghosted_mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
-    // m3dc1_mesh::instance()->ghosted_mesh->verify();    // For testing
+    m3dc1_ghost::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
+    // m3dc1_ghost::instance()->mesh->verify();    // For testing
 
   }
-  m3dc1_mesh::instance()->initialize();
+  m3dc1_ghost::instance()->initialize();
   return M3DC1_SUCCESS;
 }
 

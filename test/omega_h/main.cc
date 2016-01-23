@@ -1,42 +1,54 @@
+/* Load an APF mesh using a mesh file and convert to omega_h file;
+   ghost omega_h file, and convert back to APF.
+*/
+
 #ifndef NOM3DC1
 #define NOM3DC1
 #endif
 
+#include "m3dc1_ghost.h"
+#include "apfOmega_h.h"
+#include "m3dc1_scorec.h"
 #include "m3dc1_mesh.h"
-#include <gmi_mesh.h>
-#include <apfMDS.h>
-#include <apfMesh2.h>
-#include <PCU.h>
-// #include <omega_h.h>
+#include "gmi_mesh.h"
+#include "gmi_null.h"
+#include "apfMDS.h"
+#include "apfMesh2.h"
+#include "PCU.h"
 #include <cstdlib>
-#include <apfOmega_h.h>
-
-//using namespace std;
-// using namespace osh;
 
 int main(int argc, char** argv)
 {
   MPI_Init(&argc,&argv);
   PCU_Comm_Init();
-  if ( argc != 4 ) {
+  if ( argc != 2 ) {
     if ( !PCU_Comm_Self() )
-      printf("Usage: %s <model> <in.smb> <out.vtu>\n", argv[0]);
+      printf("Usage: %s <in.smb>\n", argv[0]);
     MPI_Finalize();
     exit(EXIT_FAILURE);
   }
-  gmi_register_mesh();
-  apf::Mesh2* m = apf::loadMdsMesh(argv[1],argv[2]);
-  osh_t om = osh::fromAPF(m);
-  m->destroyNative();
-  apf::destroyMesh(m);
-  osh_write_vtk(om, argv[3]);
-  m = apf::makeEmptyMdsMesh(gmi_load(argv[1]), osh_dim(om), false);
-  osh::toAPF(om, m);
-  m->verify();
+  
+  // Load mesh using null model
+  gmi_register_null();
+  apf::Mesh2* mesh = apf::loadMdsMesh(".null", argv[1]);
+  mesh->verify();
+
+  // APF -> omega_h -> APF
+  osh_t om = osh::fromAPF(mesh);
+  mesh->destroyNative();
+  apf::destroyMesh(mesh);
+  mesh = apf::makeEmptyMdsMesh(gmi_load(".null"), osh_dim(om), false);
+  osh_ghost(&om, 1);
+  osh::toAPF(om, mesh);
+  mesh->verify();
+
+  // Clean up and finalize
   osh_free(om);
-  m->destroyNative();
-  apf::destroyMesh(m);
+  mesh->destroyNative();
+  apf::destroyMesh(mesh);
   PCU_Comm_Free();
   MPI_Finalize();
 }
+
+
 

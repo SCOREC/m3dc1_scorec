@@ -64,6 +64,7 @@ set(SOURCES
   src/Expression.cc
   src/m3dc1_ls.cc
   src/m3dc1_mesh.cc
+  src/m3dc1_ghost.cc
   src/m3dc1_sizeField.cc
   src/PolyNomial.cc
   src/ReducedQuinticImplicit.cc
@@ -84,6 +85,7 @@ set(HEADERS
   include/m3dc1_field.h
   include/m3dc1_ls.h
   include/m3dc1_mesh.h
+  include/m3dc1_ghost.h
   include/m3dc1_model.h
   include/m3dc1_slnTransfer.h
   include/PolyNomial.h
@@ -191,7 +193,13 @@ endif()
     target_link_libraries(omega_h_test ${DEP_LIBS})
     target_link_libraries(omega_h_test ${TARGET_LIB_NAME})
     INSTALL(TARGETS omega_h_test RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+    
+    add_executable(ghosting_test test/ghosting/main.cc)
+    target_link_libraries(ghosting_test ${DEP_LIBS})
+    target_link_libraries(ghosting_test ${TARGET_LIB_NAME})
+    INSTALL(TARGETS ghosting_test RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
   endif()
+  
 endif()
 
 #binary distribution package
@@ -208,3 +216,5 @@ ${CMAKE_Fortran_COMPILER_FULLPATH}")
 message("CMAKE_Fortran_COMPILER = ${CMAKE_Fortran_COMPILER}")
 message("CMAKE_Fortran_FLAGS = ${CMAKE_Fortran_FLAGS}")
 message("CMAKE_INSTALL_PREFIX = ${CMAKE_INSTALL_PREFIX}")
+
+

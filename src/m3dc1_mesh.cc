@@ -191,8 +191,6 @@ m3dc1_mesh::m3dc1_mesh()
 // *********************************************************
 {
   mesh = NULL;
-  ghosted_mesh = NULL;
-  ghost_nlayers = 0;
   field_container=NULL;
   reset();
   ordering_opt=M3DC1_NO_ORDER;
@@ -207,8 +205,6 @@ m3dc1_mesh::~m3dc1_mesh()
   clean(fields_keep);
   mesh->destroyNative();
   destroyMesh(mesh);
-  ghosted_mesh->destroyNative();
-  destroyMesh(ghosted_mesh);
 }
 
 void m3dc1_mesh:: clean(std::set<int>& fields_keep)
@@ -247,12 +243,6 @@ void m3dc1_mesh:: clean(std::set<int>& fields_keep)
   mesh->destroyTag(own_partid_tag);
   mesh->destroyTag(num_global_adj_node_tag);
   mesh->destroyTag(num_own_adj_node_tag);
-
-  ghosted_mesh->destroyTag(local_entid_tag);
-  ghosted_mesh->destroyTag(own_partid_tag);
-  ghosted_mesh->destroyTag(num_global_adj_node_tag);
-  ghosted_mesh->destroyTag(num_own_adj_node_tag);
-
 }
 m3dc1_mesh* m3dc1_mesh::_instance=NULL;
 m3dc1_mesh* m3dc1_mesh::instance()
