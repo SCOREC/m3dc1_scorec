@@ -21,6 +21,7 @@
 #define m3dc1_mesh_setcoord m3dc1_mesh_setcoord_
 #define m3dc1_mesh_getcoord m3dc1_mesh_getcoord_
 #define m3dc1_mesh_getnument m3dc1_mesh_getnument_
+#define m3dc1_ghost_getnument m3dc1_ghost_getnument_
 #define m3dc1_mesh_getnumownent m3dc1_mesh_getnumownent_
 #define m3dc1_mesh_getnumglobalent m3dc1_mesh_getnumglobalent_
 #define m3dc1_mesh_setordering m3dc1_mesh_setordering_
@@ -108,3 +109,32 @@
 #define m3dc1_solver_aztec m3dc1_solver_aztec_
 #define m3dc1_solver_amesos m3dc1_solver_amesos_
 #define m3dc1_solver_getnumiter m3dc1_solver_getnumiter_
+
+#define m3dc1_gfield_getlocaldofid m3dc1_gfield_getlocaldofid_
+#define m3dc1_gfield_getowndofid m3dc1_gfield_getowndofid_
+#define m3dc1_gfield_getglobaldofid m3dc1_gfield_getglobaldofid_
+#define m3dc1_gfield_getnumlocaldof m3dc1_gfield_getnumlocaldof_
+#define m3dc1_gfield_getnumowndof m3dc1_gfield_getnumowndof_
+#define m3dc1_gfield_getnumglobaldof m3dc1_gfield_getnumglobaldof_
+#define m3dc1_gfield_getnewid m3dc1_gfield_genid_
+#define m3dc1_gfield_add m3dc1_gfield_add_
+#define m3dc1_gfield_mult m3dc1_gfield_mult_
+#define m3dc1_gfield_assign m3dc1_gfield_assign_
+#define m3dc1_gfield_copy m3dc1_gfield_copy_
+#define m3dc1_gfield_insert m3dc1_gfield_insert_
+#define m3dc1_gfield_isnan m3dc1_gfield_isnan_
+#define m3dc1_gfield_sumsq m3dc1_gfield_sumsq_
+#define m3dc1_gfield_compare m3dc1_gfield_compare_
+#define m3dc1_gfield_write m3dc1_gfield_write_
+#define m3dc1_gfield_print m3dc1_gfield_print_
+#define m3dc1_gfield_retrieve m3dc1_gfield_retrieve_
+#define m3dc1_gfield_set m3dc1_gfield_set_
+#define m3dc1_gfield_sum_plane m3dc1_gfield_sum_plane_
+#define m3dc1_gfield_printcompnorm m3dc1_gfield_printcompnorm_
+#define m3dc1_gfield_max m3dc1_gfield_max_
+
+
+
+
+
+

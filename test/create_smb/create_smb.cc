@@ -7,6 +7,12 @@
 #include <parma.h>
 #include <apfZoltan.h>
 
+#include <iostream>
+#include <cassert>
+#include <cstdlib>
+
+using namespace std;
+
 double  a_param = 0;
 double  b_param = 0;
 double  c_param = 0;

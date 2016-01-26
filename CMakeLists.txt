@@ -198,6 +198,11 @@ endif()
     target_link_libraries(ghosting_test ${DEP_LIBS})
     target_link_libraries(ghosting_test ${TARGET_LIB_NAME})
     INSTALL(TARGETS ghosting_test RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+    
+    add_executable(create_smb test/create_smb/create_smb.cc)
+    target_link_libraries(create_smb ${DEP_LIBS})
+    target_link_libraries(create_smb ${TARGET_LIB_NAME})
+    INSTALL(TARGETS create_smb RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
   endif()
   
 endif()

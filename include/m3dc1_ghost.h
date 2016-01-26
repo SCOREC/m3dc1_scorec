@@ -38,7 +38,7 @@ public:
   int nlayers;
   int ordering_opt;
 
-    // local counter for fast info retrieval
+  // local counter for fast info retrieval
   int num_local_ent[4];
   int num_global_ent[4];
   int num_own_ent[4];

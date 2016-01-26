@@ -8,10 +8,12 @@
 
 #include "m3dc1_ghost.h"
 #include "m3dc1_mesh.h"
+#include "m3dc1_model.h"
 #include "apfOmega_h.h"
 #include "m3dc1_scorec.h"
 #include "m3dc1_mesh.h"
 #include "gmi_mesh.h"
+#include "gmi.h"
 #include "gmi_null.h"
 #include "apf.h"
 #include "apfMDS.h"
@@ -26,9 +28,9 @@ using namespace std;
 int main(int argc, char** argv)
 {
   MPI_Init(&argc, &argv);
-  // m3dc1_scorec_init();
-  PCU_Comm_Init();
-
+  m3dc1_scorec_init();
+  // PCU_Comm_Init();
+  
   int op = 0, scalar_type = 0;
   int value_type[] = {scalar_type, scalar_type};
   int field_1 = 1, field_2 = 2, field_3 = 3;
@@ -70,7 +72,6 @@ int main(int argc, char** argv)
   m3dc1_mesh_getnument(&elem_dim, &num_elem);
 
   // Create and fill fields on APF mesh
-  /*
   m3dc1_field_create(&field_1,
 		     "field_1",
 		     &num_values,
@@ -86,11 +87,11 @@ int main(int argc, char** argv)
 		     &num_values,
 		     value_type,
 		     &num_dofs);
-  */
-  /*
+
+
   // Load mesh using null model
   gmi_register_null();
-  apf::Mesh2* mesh = apf::loadMdsMesh(".null", argv[1]);
+  apf::Mesh2* mesh = apf::loadMdsMesh(".null", argv[2]);
   mesh->verify();
 
   // APF -> omega_h -> APF
@@ -98,6 +99,8 @@ int main(int argc, char** argv)
   mesh->destroyNative();
   apf::destroyMesh(mesh);
   mesh = apf::makeEmptyMdsMesh(gmi_load(".null"), osh_dim(om), false);
+  /*  mesh = apf::makeEmptyMdsMesh(m3dc1_model->instance()->model,
+      osh_dim(om), false);*/
   osh_ghost(&om, 1);
   osh::toAPF(om, mesh);
   // mesh->verify();
@@ -106,18 +109,15 @@ int main(int argc, char** argv)
   osh_free(om);
   mesh->destroyNative();
   apf::destroyMesh(mesh);
-  */
-  /*
+
   m3dc1_field_delete(&field_1);
   m3dc1_field_delete(&field_2);
   m3dc1_field_delete(&field_3);
-  */
   
   m3dc1_scorec_finalize();
   // PCU_Comm_Free();
   MPI_Finalize();
-
-}
+  return M3DC1_SUCCESS;}
 
 
 
