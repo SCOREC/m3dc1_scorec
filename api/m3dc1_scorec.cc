@@ -24,6 +24,7 @@
 #include "m3dc1_slnTransfer.h"
 #include "m3dc1_sizeField.h"
 #include "ReducedQuinticImplicit.h"
+#include "apfMesh2.h"
 #include "apfOmega_h.h"
 
 bool m3dc1_double_isequal(double A, double B)
@@ -79,7 +80,23 @@ int m3dc1_scorec_finalize()
   // commented out DUE TO SEG FAULT
   int node_glb_order=NODE_GLB_ORDER; 
   m3dc1_field_delete (&node_glb_order);
+  m3dc1_gfield_delete (&node_glb_order);
 
+  // Destroy meshes
+  
+  apf::Mesh2* mesh = m3dc1_mesh::instance()->mesh;
+  mesh->destroyNative();
+  destroyMesh(mesh);
+  
+  if (m3dc1_ghost::instance()->is_ghosted) {
+    m3dc1_ghost::instance()->is_ghosted = false;
+    apf::Mesh2* ghosted_mesh = m3dc1_ghost::instance()->mesh;
+    ghosted_mesh->destroyNative();
+    printf("\n Here\n");
+    apf::destroyMesh(ghosted_mesh);
+  }
+  
+  
   PCU_Comm_Free();
   return M3DC1_SUCCESS; 
 }
@@ -3557,19 +3574,14 @@ int m3dc1_ghost_load(int* nlayers)
 //*******************************************************
 { 
   if (m3dc1_model::instance()->local_planeid == 0){
-    assert(nlayers>0);
+    assert(*nlayers>0);
     m3dc1_ghost::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
      m3dc1_ghost::instance()->nlayers = *nlayers;
+     m3dc1_ghost::instance()->is_ghosted = true;
     
     // Set up ghosted mesh via omega_h
     osh_t osh_mesh = osh::fromAPF(m3dc1_mesh::instance()->mesh);
-
-    // Set default number of ghost layers
-    /*if (m3dc1_ghost::instance()->nlayers == 0)
-      m3dc1_ghost::instance()->nlayers = 1;*/
-    
     osh_ghost(&osh_mesh, m3dc1_ghost::instance()->nlayers);
-    //m3dc1_ghost::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, osh_dim(osh_mesh), false);
     osh::toAPF(osh_mesh, m3dc1_ghost::instance()->mesh);
     osh_free(osh_mesh);
   } else {

@@ -32,6 +32,7 @@ m3dc1_ghost::m3dc1_ghost()
 {
   mesh = NULL;
   nlayers = 0;
+  is_ghosted = false;
   field_container=NULL;
   reset();
   ordering_opt=M3DC1_NO_ORDER;
@@ -80,6 +81,7 @@ void m3dc1_ghost:: clean(std::set<int>& fields_keep)
   removeTagFromDimension(mesh, num_own_adj_node_tag, 0);
 
   // destroy mesh
+  is_ghosted = false;
   mesh->destroyTag(local_entid_tag);
   mesh->destroyTag(own_partid_tag);
   mesh->destroyTag(num_global_adj_node_tag);

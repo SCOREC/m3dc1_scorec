@@ -35,6 +35,7 @@ public:
 
   // data
   apf::Mesh2* mesh;
+  bool is_ghosted;
   int nlayers;
   int ordering_opt;
 

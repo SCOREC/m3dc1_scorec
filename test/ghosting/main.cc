@@ -1,5 +1,6 @@
 /* Test access of fields on a ghosted mesh obtained via the workflow:
-   APF -> omega_h -> ghost -> APF.
+   APF -> omega_h -> ghost -> APF. This test assumes that the fields are
+   real valued and that the mesh is 2d.
 */
 
 #ifndef NOM3DC1
@@ -27,46 +28,27 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+  assert(argc == 3);
   MPI_Init(&argc, &argv);
   m3dc1_scorec_init();
-  // PCU_Comm_Init();
   
   int op = 0, scalar_type = 0;
   int value_type[] = {scalar_type, scalar_type};
   int field_1 = 1, field_2 = 2, field_3 = 3;
-  int num_values = 3;
-  int num_dofs = 6;
-  
+  int num_values = 3, num_dofs = 6;
   int num_dofs_node = num_values * num_dofs;
-  
   int num_vertex, num_own_vertex, vertex_dim = 0;
   int num_elem, elem_dim = 2;
 
   int num_plane = 1;
 
-  if (argc < 4 && !PCU_Comm_Self()) {
-    printf("Usage: ./ghost_example model mesh #planes "
-	   "real(0)/complex(1)\n");
+  if (argc < 2 && !PCU_Comm_Self()) {
+    printf("Usage: ./ghost_example model mesh");
     return M3DC1_FAILURE;
   }
 
-  if (argc > 3) {
-    num_plane = atoi(argv[3]);
-    if (num_plane > 1 && PCU_Comm_Peers()%num_plane == 0)
-      m3dc1_model_setnumplane (&num_plane);
-  }
-  
-  if(argc > 4)
-    scalar_type = atoi(argv[4]);
-
-  if(num_plane>1)
-    elem_dim=3; // use wedge in 3D
-
   m3dc1_model_load(argv[1]);
-  // m3dc1_model_print();
   m3dc1_mesh_load(argv[2]);
-  // printStats(m3dc1_mesh::instance()->mesh);
-
   m3dc1_mesh_getnument (&vertex_dim, &num_vertex);
   m3dc1_mesh_getnumownent (&vertex_dim, &num_own_vertex);
   m3dc1_mesh_getnument(&elem_dim, &num_elem);
@@ -88,36 +70,87 @@ int main(int argc, char** argv)
 		     value_type,
 		     &num_dofs);
 
+  // fill field_1
+  printf("\n");
+  m3dc1_field_printcompnorm(&field_1, "field_1 init info");
+  for(int inode=0; inode<num_vertex; inode++)
+  {
+    double xyz[3];
+    m3dc1_node_getcoord(&inode, xyz);
+    // 2D mesh, z-component = 0
+    if(num_plane==1) assert(AlmostEqualDoubles(xyz[2], 0, 1e-6, 1e-6));
+    vector<double> dofs(num_dofs_node*(1+scalar_type));
+    for(int i=0; i<num_dofs_node*(1+scalar_type); i++)
+      dofs.at(i)=xyz[i%3];
+    m3dc1_ent_setdofdata(&vertex_dim, &inode, &field_1,
+			 &num_dofs_node, &dofs.at(0));
+  }
+  m3dc1_field_printcompnorm(&field_1, "field_1 after set info");
 
-  // Load mesh using null model
-  gmi_register_null();
-  apf::Mesh2* mesh = apf::loadMdsMesh(".null", argv[2]);
-  mesh->verify();
+  // fill field_2
+  printf("\n");
+  m3dc1_field_printcompnorm(&field_2, "field_2 init info");
+  for(int inode=0; inode<num_vertex; inode++)
+  {
+    double xyz[3];
+    m3dc1_node_getcoord(&inode, xyz);
+    if(num_plane==1) assert(AlmostEqualDoubles(xyz[2], 0, 1e-6, 1e-6));
+    vector<double> dofs(num_dofs_node*(1+scalar_type));
+    for(int i=0; i<num_dofs_node*(1+scalar_type); i++)
+      dofs.at(i)=xyz[i%5];
+    m3dc1_ent_setdofdata(&vertex_dim, &inode, &field_2,
+			 &num_dofs_node, &dofs.at(0));
+  }
+  m3dc1_field_printcompnorm(&field_2, "field_1 after set info");
 
-  // APF -> omega_h -> APF
-  osh_t om = osh::fromAPF(mesh);
-  mesh->destroyNative();
-  apf::destroyMesh(mesh);
-  mesh = apf::makeEmptyMdsMesh(gmi_load(".null"), osh_dim(om), false);
-  /*  mesh = apf::makeEmptyMdsMesh(m3dc1_model->instance()->model,
-      osh_dim(om), false);*/
-  osh_ghost(&om, 1);
-  osh::toAPF(om, mesh);
-  // mesh->verify();
+  // fill field_3
+  printf("\n");
+  m3dc1_field_printcompnorm(&field_3, "field_3 init info");
+  for(int inode=0; inode<num_vertex; inode++)
+  {
+    double xyz[3];
+    m3dc1_node_getcoord(&inode, xyz);
+    if(num_plane==1) assert(AlmostEqualDoubles(xyz[2], 0, 1e-6, 1e-6));
+    vector<double> dofs(num_dofs_node*(1+scalar_type));
+    for(int i=0; i<num_dofs_node*(1+scalar_type); i++)
+      dofs.at(i)=xyz[i%7];
+    m3dc1_ent_setdofdata(&vertex_dim, &inode, &field_3,
+			 &num_dofs_node, &dofs.at(0));
+  }
+  m3dc1_field_printcompnorm(&field_3, "field_3 after set info");
+  
+  // Initialize ghosted mesh
+  
+  int nlayers = 1;
+  m3dc1_ghost_load(&nlayers);
 
+  // Check fields on ghosted mesh
+  /*
+  int exists_1, exists_2, exists_3;
+  m3dc1_gfield_exist(&field_1, &exists_1);
+  printf("\nField 1 on ghosted mesh exists: %d", exists_1);
+
+  m3dc1_gfield_exist(&field_2, &exists_2);
+  printf("\nField 2 on ghosted mesh exists: %d", exists_2);
+
+  m3dc1_gfield_exist(&field_3, &exists_3);
+  printf("\nField 3 on ghosted mesh exists: %d", exists_3);
+  */
+  /*
+  m3dc1_gfield_printcompnorm(&field_1, "field_1 on ghosted mesh");
+  m3dc1_gfield_printcompnorm(&field_2, "field_2 on ghosted mesh");
+  m3dc1_gfield_printcompnorm(&field_3, "field_3 on ghosted mesh");
+  */
+  
   // Clean up and finalize
-  osh_free(om);
-  mesh->destroyNative();
-  apf::destroyMesh(mesh);
-
   m3dc1_field_delete(&field_1);
   m3dc1_field_delete(&field_2);
   m3dc1_field_delete(&field_3);
   
   m3dc1_scorec_finalize();
-  // PCU_Comm_Free();
   MPI_Finalize();
-  return M3DC1_SUCCESS;}
+  return M3DC1_SUCCESS;
+}
 
 
 
