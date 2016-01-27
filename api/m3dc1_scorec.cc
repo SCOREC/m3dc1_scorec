@@ -15,7 +15,6 @@
 #include "m3dc1_field.h"
 #include <mpi.h>
 #include <PCU.h>
-#include "gmi_null.h" // FIXME: should be deleted later on since it's added temporarily for null model
 #include <gmi_analytic.h>
 #include <map>
 #include "apfMDS.h"
@@ -53,18 +52,6 @@ int m3dc1_scorec_init()
 { 
   PCU_Comm_Init();
 
-  /*
-  int i, processid = getpid();
-  if (!PCU_Comm_Self())
-  {
-    std::cout<<"Proc "<<PCU_Comm_Self()<<">> pid "<<processid<<" Enter any digit...\n";
-    std::cin>>i;
-  }
-  else
-    std::cout<<"Proc "<<PCU_Comm_Self()<<">> pid "<<processid<<" Waiting...\n";
-  MPI_Barrier(MPI_COMM_WORLD);
-  */
-  
   m3dc1_model :: instance()-> model = gmi_make_analytic();
   return M3DC1_SUCCESS; 
 }
@@ -87,17 +74,6 @@ int m3dc1_scorec_finalize()
   mesh->destroyNative();
   destroyMesh(mesh);
 
-  /*
-  if (m3dc1_ghost::instance()->is_ghosted) {
-    m3dc1_ghost::instance()->is_ghosted = false;
-    apf::Mesh2* ghosted_mesh = m3dc1_ghost::instance()->mesh;
-    ghosted_mesh->destroyNative();
-    printf("\n Here\n");
-    apf::destroyMesh(ghosted_mesh);
-  }
-  */
-  
-  
   PCU_Comm_Free();
   return M3DC1_SUCCESS; 
 }
@@ -200,7 +176,6 @@ int m3dc1_model_load(const char* /* in */ model_file)
   m3dc1_model::instance()->caculateBoundingBox();
   // save the num of geo ent on the oringal plane
   m3dc1_model::instance()->numEntOrig[0]=m3dc1_model::instance()->model->n[0];
-  //if(m3dc1_model::instance()->model->n[1]==1) assert(m3dc1_model::instance()->numEntOrig[0]==0); // for a smooth loop, there is no geo vtx 
   m3dc1_model::instance()->numEntOrig[1]=m3dc1_model::instance()->model->n[1];
   m3dc1_model::instance()->numEntOrig[2]=m3dc1_model::instance()->model->n[2];
 
@@ -340,19 +315,6 @@ int m3dc1_mesh_load(const char* mesh_file)
     m3dc1_mesh::instance()->mesh = apf::loadMdsMesh(m3dc1_model::instance()->model, mesh_file);
     /* vertex load balancing */
     Parma_PrintPtnStats(m3dc1_mesh::instance()->mesh, "initial");
-/*
-    apf::MeshTag* weights = setWeights(m3dc1_mesh::instance()->mesh);
-    const double step = 0.5; const int verbose = 2;
-    apf::Balancer* balancer = Parma_MakeVtxElmBalancer(m3dc1_mesh::instance()->mesh, step, verbose);
-    balancer->balance(weights, 1.05);
-    delete balancer;
-    clearTags(m3dc1_mesh::instance()->mesh, weights);
-    m3dc1_mesh::instance()->mesh->destroyTag(weights);
-    Parma_PrintPtnStats(m3dc1_mesh::instance()->mesh, "final");
-    // getMdsIndex returns the dimension-unique index for the entity only if the enity arrays have no gaps,
-    // so apf::reorderMdsMesh shall be called after any mesh modification.
-    reorderMdsMesh(m3dc1_mesh::instance()->mesh);
-*/
     // will not work not non-man geo 
     //m3dc1_mesh::instance()->mesh->verify();
     apf::Mesh2* mesh = m3dc1_mesh::instance()->mesh;
@@ -1024,38 +986,6 @@ int m3dc1_field_sum (FieldID* /* in */ field_id)
 #endif
   return M3DC1_SUCCESS;
 }
-
-/*
-int m3dc1_field_sumsq (FieldID* field_id, double* sum)
-{
-#ifdef DEBUG
-  int isnan;
-  m3dc1_field_isnan(field_id, &isnan);
-  assert(isnan==0);
-#endif
-  *sum=0.;
-  int num_values, scalar_type, total_num_dof, inode=0, vertex_type=0;
-  char field_name[FIXSIZEBUFF];
-  m3dc1_field_getinfo(field_id, field_name, &num_values, &scalar_type, &total_num_dof);
-
-  double dof_data[FIXSIZEBUFF];
-  apf::Mesh2* m = m3dc1_mesh::instance()->mesh;
-  MeshEntity* e;
-  MeshIterator* it = m->begin(0);
-  while ((e = m->iterate(it)))
-  {
-    if(!is_ent_original(m,e)) continue;
-    int num_dof;
-    m3dc1_ent_getdofdata (&vertex_type, &inode, field_id, &num_dof, dof_data);
-    assert(num_dof*(1+scalar_type)<=sizeof(dof_data)/sizeof(double));
-    for(int i=0; i<total_num_dof*(1+scalar_type); i++)
-      *sum+=dof_data[i]*dof_data[i];
-    ++inode;
-  }
-  m->end(it);
-  return M3DC1_SUCCESS;
-}
-*/
 
 //*******************************************************
 int m3dc1_field_sumsq (FieldID* /* in */ field_id, double* /* out */ sum)
@@ -2117,10 +2047,7 @@ int m3dc1_matrix_flush(int* matrix_id)
   m3dc1_matrix* mat = m3dc1_solver::instance()->get_matrix(*matrix_id);
   if (!mat)
     return M3DC1_FAILURE;
-  //if (!PCU_Comm_Self()) mat->printInfo();
   mat->flushAssembly();
-  //if (!PCU_Comm_Self()) std::cout<<"Matrix "<<*matrix_id<<"("<<mat->get_type()<<") flush assembly time "<<MPI_Wtime()-t1<<std::endl;
-  //if (!PCU_Comm_Self()) mat->printInfo();
 }
 
 //*******************************************************
@@ -2308,20 +2235,6 @@ int adapt_by_field (int * fieldId, double* psi0, double * psil)
   set<int> field_keep;
   field_keep.insert(*fieldId);
   apf::Mesh2* mesh = m3dc1_mesh::instance()->mesh;
-  /*
-  for (int i=0; i < mesh->countFields(); ++i)
-  {
-    Field* f = mesh->getField(i);
-    std::cout<<"find field "<<getName(f)<<endl;
-  }
-  for (int i=0; i < mesh->countNumberings(); ++i)
-  {
-    Numbering* n = mesh->getNumbering(i);
-    std::cout<<"find numbering "<<getName(n)<<endl;
-  }*/
-  //m3dc1_mesh ::instance ()->clean(field_keep);
-  //apf::writeVtkFiles("before",m3dc1_mesh::instance()->mesh);
-  //mesh->writeNative("before.smb");
   // read the size field parameters
   for(int i=0; i<13; i++)
     fscanf(fp, "%lf ", &param[i]);
@@ -2345,7 +2258,6 @@ int adapt_by_field (int * fieldId, double* psi0, double * psil)
   double mmax[2], mmin[2];
   m3dc1_model_getmaxcoord(mmax,mmax+1);
   m3dc1_model_getmincoord(mmin,mmin+1);
-  //Vortex sfv(mesh, center, mmax[0]-mmin[0]);
 
   ReducedQuinticImplicit shape;
   vector<apf::Field*> fields;
@@ -2369,35 +2281,10 @@ int adapt_by_field (int * fieldId, double* psi0, double * psil)
   }
   ReducedQuinticTransfer slnTrans(mesh,fields, &shape);
   ma::Input* in = ma::configure(mesh,&sf,&slnTrans);
-  //ma::Input* in = ma::configure(mesh,&sfv);
   in->maximumIterations = 9;
-  //char filename[256];
-  //sprintf(filename,"before%d",adapt_time);
-  //apf::writeVtkFiles(filename,mesh);
-  //set<int> field_keep;
-  //field_keep.insert(*fieldId);
-  //m3dc1_mesh ::instance ()->clean(field_keep);
   in->shouldRunPostZoltan = true;
   ma::adapt(in);
   reorderMdsMesh(mesh);
-  //mesh->verify();
-  
-  /*while(mesh->countFields())
-  {
-    Field* f = mesh->getField(0);
-    std::cout<<"destroying field "<<getName(f)<<endl;
-    destroyField(f);
-  }*/
-  /*
-  while(mesh->countNumberings())
-  {
-    Numbering* n = mesh->getNumbering(0);
-    std::cout<<"destroying numbering after adapt "<<getName(n)<<endl;
-    destroyNumbering(n);
-  }*/
-  //sprintf(filename,"adapted%d",adapt_time++);
-  //apf::writeVtkFiles(filename,mesh);
-  //mesh->writeNative("adapted.smb");
 
   m3dc1_mesh::instance()->initialize();
   it=m3dc1_mesh::instance()->field_container->begin();
@@ -2462,14 +2349,12 @@ void smooth_size_field (apf::Field* sizeField)
     }
     size/=nodes.size();
     size=1./size;
-    //if(size<0.85*sizeOrg)
     setComponents(sizeField, e, 0, &size);
   }
 }
 
 void group_complex_dof (apf::Field* field, int option)
 {
-  //if(!PCU_Comm_Self()) cout<<" regroup complex number field with option "<<option<<endl;
   int num_dof_double = countComponents(field);
   assert(num_dof_double/6%2==0);
   int num_dof = num_dof_double/2;
@@ -2589,48 +2474,22 @@ int adapt_by_error_field (double * errorData, double * errorAimed, int * max_ada
     int complexType = it->second->get_value_type();
     if(complexType) group_complex_dof(field, 1);
     if(isFrozen(field)) unfreeze(field);
-    //if(!PCU_Comm_Self()) std::cout<<"Solution transfer: add field "<<apf::getName(field)<<std::endl;
     fields.push_back(field);
     it++;
   }
   while(mesh->countNumberings())
   {
     apf::Numbering* n = mesh->getNumbering(0);
-    //if(!PCU_Comm_Self()) std::cout<<"destroying numbering "<<getName(n)<<endl;
     apf::destroyNumbering(n);
   }
-  char filename[256];
-  sprintf(filename,"before%d",adapt_time);
-  //apf::writeVtkFiles(filename,mesh);
 
   ReducedQuinticTransfer slnTrans(mesh,fields, &shape);
   ma::Input* in = ma::configure(mesh,&sf,&slnTrans);
   in->maximumIterations = 5;
   in->shouldRunPostZoltan = true;
-  //set<int> field_keep;
-  //field_keep.insert(*fieldId);
-  //m3dc1_mesh ::instance ()->clean(field_keep);
   ma::adapt(in);
   reorderMdsMesh(mesh);
-  //mesh->verify();
   
-  /*while(mesh->countFields())
-  {
-    Field* f = mesh->getField(0);
-    std::cout<<"destroying field "<<getName(f)<<endl;
-    destroyField(f);
-  }*/
-  /*
-  while(mesh->countNumberings())
-  {
-    Numbering* n = mesh->getNumbering(0);
-    std::cout<<"destroying numbering after adapt "<<getName(n)<<endl;
-    destroyNumbering(n);
-  }*/
-  //sprintf(filename,"adapted%d",adapt_time++);
-  //apf::writeVtkFiles(filename,mesh);
-  //mesh->writeNative("adapted.smb");
-
   m3dc1_mesh::instance()->initialize();
   it=m3dc1_mesh::instance()->field_container->begin();
   while(it!=m3dc1_mesh::instance()->field_container->end())
@@ -2711,8 +2570,6 @@ int m3dc1_mesh_write(const char* filename, int *option)
     apf::writeVtkFiles(filename,m3dc1_mesh::instance()->mesh);
     int one=1;
     if(*option==3) output_face_data (&one, &geoId[0], "geoId");
-    /*apf::removeTagFromDimension(mesh, tag, dim);
-    mesh->destroyTag(tag);*/
   }
   else
   {
@@ -3482,20 +3339,6 @@ int m3dc1_solver_amesos(int* matrix_id, FieldID* x_fieldid, FieldID* b_fieldid, 
   double* x_field_data = getArrayData(x_field);
   for (int i=0; i<sol_x.MyLength(); ++i)
     x_field_data[i] =s[0][i];
-/*
-  apf::Field* x_field = (*(m3dc1_mesh::instance()->field_container))[*x_fieldid]->get_field();
-  int num_dof=countComponents(x_field);
-  assert(num_dof*m3dc1_mesh::instance()->num_local_ent[0]==sol_x.MyLength());
-  double* dof_data= new double[num_dof];
-  for (int i=0; i<m3dc1_mesh::instance()->num_local_ent[0]; ++i)
-  {
-    apf::MeshEntity* e = getMdsEntity(m3dc1_mesh::instance()->mesh, 0, i);
-    for (int j=0; j<num_dof; ++j)
-      dof_data[j] = sol_x[0][i*num_dof+j];
-    setComponents(x_field, e, 0, dof_data);
-  }
-  delete [] dof_data;
-*/
   return M3DC1_SUCCESS;
 #endif
 }
