@@ -2517,38 +2517,42 @@ int adapt_by_error_field (double * errorData, double * errorAimed, int * max_ada
 
 #endif // #ifndef M3DC1_MESHGEN
 
+static double square(double x) {return x * x;}
+
 int m3dc1_field_printcompnorm(FieldID* /* in */ field_id, const char* info)
 {
-  double* pts=NULL;
-  m3dc1_field_getdataptr (field_id, &pts);
-  int num_dof;
-  m3dc1_field_getnumlocaldof(field_id, &num_dof);
+  /* assumes DOFs are real */
+  double* array=NULL;
+  m3dc1_field_getdataptr (field_id, &array);
+  int dof_in_array;
+  m3dc1_field_getnumlocaldof(field_id, &dof_in_array);
   m3dc1_field * mf = (*(m3dc1_mesh::instance()->field_container))[*field_id];
 
   apf::Field* f = mf ->get_field();
   int dof_per_node = countComponents(f);
-  int num_comp=dof_per_node/C1TRIDOFNODE;
-  vector<double> norms(dof_per_node/C1TRIDOFNODE);
-  int j=0;
-  for(int i=0; i<num_dof/C1TRIDOFNODE; i++)
-  {
-     for(int k=0; k<6; k++)
-        norms.at(j)+=pts[i*C1TRIDOFNODE+k]*pts[i*C1TRIDOFNODE+k];
-     j++;
-     j%=num_comp;
-  }
-  vector<double> buff=norms;
-  MPI_Allreduce(&buff[0],&norms[0], num_comp, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+  int dof_per_value = C1TRIDOFNODE;
+  int values_per_node = dof_per_node / dof_per_value;
+  vector<double> norms(values_per_node);
+  int values_in_array = dof_in_array / dof_per_value;
+  int nnodes = dof_in_array / dof_per_node;
+  for(int i = 0; i < nnodes; ++i)
+    for(int j = 0; j < values_per_node; ++j)
+      for(int k = 0; k < dof_per_value; ++k)
+         norms.at(j) += square(array[i * dof_per_node + j * dof_per_value + k]);
+  vector<double> buff = norms;
+  MPI_Allreduce(&buff[0], &norms[0], values_per_node,
+      MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   int psize;
   MPI_Comm_size(MPI_COMM_WORLD,&psize);
   if(PCU_Comm_Self() == psize-1)
   {
     std::cout<< "norm of vec "<<info;
-    for(int i=0; i<num_comp; i++)
+    for(int i = 0; i < values_per_node; ++i)
       std::cout<<" "<<std::sqrt(norms[i]);
     std::cout<<std::endl;
   }
 }
+
 int m3dc1_mesh_write(const char* filename, int *option)
 {
   if(*option==0 ||*option==3)
