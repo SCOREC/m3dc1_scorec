@@ -54,7 +54,7 @@ int m3dc1_plane_setphi(int* planeid, double* phi);
 int m3dc1_plane_getphi(int* planeid, double* phi);
 
 /** model functions */
-int m3dc1_model_load(char* /* in */ model_file);
+int m3dc1_model_load(const char* /* in */ model_file);
 int m3dc1_model_print();
 int m3dc1_model_setnumplane(int*);
 int m3dc1_model_getnumplane(int*);
@@ -68,10 +68,10 @@ int m3dc1_model_getmaxcoord(double* /* out */ x_max, double* /* out */ y_max); /
 
 /** mesh functions */
 
-int m3dc1_mesh_load(char* mesh_file);
+int m3dc1_mesh_load(const char* mesh_file);
 int m3dc1_ghost_load(int* nlayers); // For loading ghost mesh with nlayers
 
-int m3dc1_mesh_write(char* filename, int *option); // 0: vtk file with field; 1:smb file
+int m3dc1_mesh_write(const char* filename, int *option); // 0: vtk file with field; 1:smb file
 int m3dc1_mesh_build3d(int* num_field, int* field_id, int* num_dofs_per_value);
 
 int m3dc1_mesh_getnument (int* /* in*/ ent_dim, int* /* out */ num_ent);
@@ -136,10 +136,10 @@ int m3dc1_field_set (FieldID* /* in */ filed1, double * /*in*/ data, int * /* in
 int m3dc1_field_insert(FieldID* /* in */ field, int /* in */ * local_dof, int * /* in */ size, double* /* in */ values, int * type, int * /* in */ op);
 int m3dc1_field_isnan(FieldID* /* in */ field, int * isnan);
 int m3dc1_field_compare(FieldID* field_id_1, FieldID* field_id_2);
-int m3dc1_field_write(FieldID* field, char* file_name);
+int m3dc1_field_write(FieldID* field, const char* file_name);
 int m3dc1_field_print(FieldID* field);
 int m3dc1_field_sum_plane (FieldID* /* in */ field_id);
-int m3dc1_field_printcompnorm(FieldID* /* in */ field_id, char* info);
+int m3dc1_field_printcompnorm(FieldID* /* in */ field_id, const char* info);
 int m3dc1_field_max (FieldID* field_id, double * max_val, double * min_val);
 
 
@@ -177,10 +177,10 @@ int m3dc1_gfield_set (FieldID* /* in */ filed1, double * /*in*/ data, int * /* i
 int m3dc1_gfield_insert(FieldID* /* in */ field, int /* in */ * local_dof, int * /* in */ size, double* /* in */ values, int * type, int * /* in */ op);
 int m3dc1_gfield_isnan(FieldID* /* in */ field, int * isnan);
 int m3dc1_gfield_compare(FieldID* field_id_1, FieldID* field_id_2);
-int m3dc1_gfield_write(FieldID* field, char* file_name);
+int m3dc1_gfield_write(FieldID* field, const char* file_name);
 int m3dc1_gfield_print(FieldID* field);
 int m3dc1_gfield_sum_plane (FieldID* /* in */ field_id);
-int m3dc1_gfield_printcompnorm(FieldID* /* in */ field_id, char* info);
+int m3dc1_gfield_printcompnorm(FieldID* /* in */ field_id, const char* info);
 int m3dc1_gfield_max (FieldID* field_id, double * max_val, double * min_val);
 
 int m3dc1_model_getplaneid(int * /* out */ plane_id);
@@ -226,13 +226,13 @@ int m3dc1_epetra_multiply(int* matrix_id, FieldID* in_fieldid, FieldID* out_fiel
 int m3dc1_epetra_print(int* matrix_id);
 
 int m3dc1_solver_aztec(int* matrix_id, FieldID* in_fieldid, FieldID* out_fieldid);
-int m3dc1_solver_amesos(int* matrix_id, FieldID* in_fieldid, FieldID* out_fieldid, char* solver_name);
+int m3dc1_solver_amesos(int* matrix_id, FieldID* in_fieldid, FieldID* out_fieldid, const char* solver_name);
 int m3dc1_solver_getnumiter(int* matrix_id, int * iter_num);
 
 // for performance test
 int m3dc1_matrix_flush(int* matrix_id);
 int m3dc1_matrix_setassembleoption(int * op);
-int m3dc1_matrix_write(int* matrix_id, char* file_name);
+int m3dc1_matrix_write(int* matrix_id, const char* file_name);
 int m3dc1_matrix_print(int* matrix_id);
 
 // adaptation
@@ -244,7 +244,7 @@ int adapt_by_error_field (double * errorField, double * errorAimed, int* max_nod
 // for adaptation
 int set_mesh_size_bound (double* abs_size, double * rel_size);
 int set_adapt_smooth_factor (double* fac);
-int output_face_data (int * size, double * data, char * vtkfile);
+int output_face_data (int * size, double * data, const char* vtkfile);
 int sum_edge_data (double * data, int * size);
 int get_node_error_from_elm (double * elm_data, int * size, double* nod_data);
 #ifdef __cplusplus

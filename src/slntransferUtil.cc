@@ -155,7 +155,7 @@ inline int checkMagnitude (double a)
   return -tol<a&& a<1+tol;
 }
 
-int output_face_data (int * size, double * data, char * vtkfile)
+int output_face_data (int * size, double * data, char const* vtkfile)
 {
   FILE *fp;
 	

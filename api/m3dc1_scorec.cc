@@ -191,7 +191,7 @@ int m3dc1_model_getmaxcoord(double* x_max, double* y_max)
 }
 
 //*******************************************************
-int m3dc1_model_load(char* /* in */ model_file)
+int m3dc1_model_load(const char* /* in */ model_file)
 //*******************************************************
 {  
   std::string str_model_name(model_file);
@@ -331,7 +331,7 @@ void clearTags(apf::Mesh* m, apf::MeshTag* t) {
 }
 
 //*******************************************************
-int m3dc1_mesh_load(char* mesh_file)
+int m3dc1_mesh_load(const char* mesh_file)
 //*******************************************************
 { 
   if (m3dc1_model::instance()->local_planeid == 0) 
@@ -1458,7 +1458,7 @@ int m3dc1_field_isnan(FieldID* /* in */ field_id, int * isnan)
 }
 
 //*******************************************************
-int m3dc1_field_write(FieldID* field_id, char* file_name)
+int m3dc1_field_write(FieldID* field_id, const char* file_name)
 //*******************************************************
 { 
   m3dc1_field* mf = (*(m3dc1_mesh::instance()->field_container))[*field_id];
@@ -2212,7 +2212,7 @@ int m3dc1_matrix_insertblock(int* matrix_id, int * ielm,
 }
 
 //*******************************************************
-int m3dc1_matrix_write(int* matrix_id, char* file_name)
+int m3dc1_matrix_write(int* matrix_id, const char* file_name)
 //*******************************************************
 {
   m3dc1_matrix* mat = m3dc1_solver::instance()->get_matrix(*matrix_id);
@@ -2657,7 +2657,7 @@ int adapt_by_error_field (double * errorData, double * errorAimed, int * max_ada
 
 #endif // #ifndef M3DC1_MESHGEN
 
-int m3dc1_field_printcompnorm(FieldID* /* in */ field_id, char* info)
+int m3dc1_field_printcompnorm(FieldID* /* in */ field_id, const char* info)
 {
   double* pts=NULL;
   m3dc1_field_getdataptr (field_id, &pts);
@@ -2689,7 +2689,7 @@ int m3dc1_field_printcompnorm(FieldID* /* in */ field_id, char* info)
     std::cout<<std::endl;
   }
 }
-int m3dc1_mesh_write(char* filename, int *option)
+int m3dc1_mesh_write(const char* filename, int *option)
 {
   if(*option==0 ||*option==3)
   {
@@ -3382,7 +3382,7 @@ int m3dc1_solver_aztec(int* matrix_id, FieldID* x_fieldid, FieldID* b_fieldid)
 #include "Amesos2_Version.hpp"
 #endif
 
-int m3dc1_solver_amesos(int* matrix_id, FieldID* x_fieldid, FieldID* b_fieldid, char* solver_name)
+int m3dc1_solver_amesos(int* matrix_id, FieldID* x_fieldid, FieldID* b_fieldid, const char* solver_name)
 {
 #ifndef M3DC1_TRILINOS
   if (!PCU_Comm_Self()) std::cout <<"[M3D-C1 ERROR] "<<__func__<<" not supported: compile the library with \"-DENABLE_TRILINOS=ON\" in config.sh\n";
@@ -4273,7 +4273,7 @@ int m3dc1_gfield_isnan(FieldID* /* in */ field_id,
 
 //*******************************************************
 int m3dc1_gfield_write(FieldID* field_id,
-		       char* file_name)
+		       const char* file_name)
 //*******************************************************
 { 
   m3dc1_field* mf = (*(m3dc1_ghost::instance()->field_container))[*field_id];
@@ -4732,7 +4732,7 @@ int adapt_by_gfield (int * fieldId,
 #endif
 
 int m3dc1_gfield_printcompnorm(FieldID* /* in */ field_id,
-			       char* info)
+			       const char* info)
 {
   double* pts=NULL;
   m3dc1_gfield_getdataptr (field_id, &pts);
