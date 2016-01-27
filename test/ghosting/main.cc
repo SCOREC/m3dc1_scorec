@@ -125,22 +125,22 @@ int main(int argc, char** argv)
   m3dc1_ghost_load(&nlayers);
 
   // Check fields on ghosted mesh
-  /*
+  
   int exists_1, exists_2, exists_3;
   m3dc1_gfield_exist(&field_1, &exists_1);
-  printf("\nField 1 on ghosted mesh exists: %d", exists_1);
+  printf("\nField 1 on ghosted mesh exists: %d\n", exists_1);
 
   m3dc1_gfield_exist(&field_2, &exists_2);
-  printf("\nField 2 on ghosted mesh exists: %d", exists_2);
+  printf("\nField 2 on ghosted mesh exists: %d\n", exists_2);
 
   m3dc1_gfield_exist(&field_3, &exists_3);
-  printf("\nField 3 on ghosted mesh exists: %d", exists_3);
-  */
-  /*
+  printf("\nField 3 on ghosted mesh exists: %d\n", exists_3);
+  
+  
   m3dc1_gfield_printcompnorm(&field_1, "field_1 on ghosted mesh");
   m3dc1_gfield_printcompnorm(&field_2, "field_2 on ghosted mesh");
   m3dc1_gfield_printcompnorm(&field_3, "field_3 on ghosted mesh");
-  */
+  
   
   // Clean up and finalize
   m3dc1_field_delete(&field_1);

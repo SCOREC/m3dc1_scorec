@@ -8,6 +8,7 @@
  
 *******************************************************************************/
 #include "m3dc1_ghost.h"
+#include "m3dc1_mesh.h"
 #include "m3dc1_scorec.h"
 #include "m3dc1_model.h"
 #include "m3dc1_field.h"
@@ -327,13 +328,14 @@ void m3dc1_ghost::initialize()
 	 m3dc1_mesh::instance()->field_container->begin();
        it !=  m3dc1_mesh::instance()->field_container->end();
        ++it) {
-    FieldID field_id = it->first();
-    int num_values = it->second()->get_num_value();
-    int value_type = it->second()->get_value_type();
-    int dof_per_value = it->second()->get_dof_per_value();
-    apf::Field* f = 
+    int field_id = it->first;
+    int num_values = it->second->get_num_value();
+    int scalar_type = it->second->get_value_type();
+    int num_dofs_per_value = it->second->get_dof_per_value();
+    apf::Field* f = it->second->get_field();
     
-  m3dc1_ghost::instance()->field_container->insert(std::map<FieldID, m3dc1_field*>::value_type(*field_id, new m3dc1_field(*field_id, f, *num_values, *scalar_type, *num_dofs_per_value)));
+    m3dc1_ghost::instance()->field_container->insert(std::map<FieldID, m3dc1_field*>::value_type(field_id, new m3dc1_field(field_id, f, num_values, scalar_type, num_dofs_per_value)));
+  }
   
 }
 
