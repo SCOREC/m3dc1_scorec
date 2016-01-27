@@ -104,10 +104,21 @@ int m3dc1_region_getoriginalface( int * /* in */ elm, int * /* out */ fac);
 
 /** field manangement */
 int m3dc1_field_getnewid (FieldID* /*out*/field_id);
+
 // ordering should be reused for field and matrix??? -Fan
 // is num_dofs input or output?
 // *value_type is either M3DC1_REAL or M3DC1_COMPLEX
-int m3dc1_field_create (FieldID* /*in*/ field_id, const char* /* in */ field_name, int* num_values, int* value_type, int* num_dofs_per_value);
+// *num_dofs_per_value refers to the spatial derivatives
+//                     stored for each "value", namely,
+//                     a value "u" has these derivatives:
+//                     u, u_x, u_y, u_xx, u_xy, u_yy
+//                     not necessarily in that order.
+// so, the hierarchy is:
+//   values, for which we store
+//   dofs which are either
+//   real or complex scalars
+int m3dc1_field_create (FieldID* /*in*/ field_id, const char* /* in */ field_name,
+    int* num_values, int* value_type, int* num_dofs_per_value);
 int m3dc1_field_delete (FieldID* /*in*/ field_id); 
 
 int m3dc1_field_getinfo(FieldID* /*in*/ field_id, char* /* out*/ field_name, int* num_values, int* value_type, int* total_num_dof);
