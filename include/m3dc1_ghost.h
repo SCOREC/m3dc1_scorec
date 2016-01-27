@@ -48,7 +48,7 @@ public:
   std::map<FieldID, m3dc1_field*>* field_container;
 
   // Populate fields by synchronizing with m3dc1_mesh's field
-  int field_synchronize();
+  // int field_synchronize();
 
   // tag for local entity id
   apf::MeshTag* local_entid_tag;

@@ -1,6 +1,6 @@
 /****************************************************************************** 
 
-  (c) 2005-2014 Scientific Computation Research Center, 
+  (c) 2005-2016 Scientific Computation Research Center, 
       Rensselaer Polytechnic Institute. All rights reserved.
   
   This work is open source software, licensed under the terms of the
@@ -319,6 +319,22 @@ void m3dc1_ghost::initialize()
 
   MPI_Allreduce(num_own_ent, num_global_ent, 4, MPI_INT, MPI_SUM, PCU_Get_Comm());
   set_node_adj_tag();
+
+  // Copy the fields on the ghosted mesh into the field container
+  if (!m3dc1_ghost::instance()->field_container)
+    m3dc1_ghost::instance()->field_container = new std::map<FieldID, m3dc1_field*>;
+  for (std::map<FieldID, m3dc1_field*>::iterator it =
+	 m3dc1_mesh::instance()->field_container->begin();
+       it !=  m3dc1_mesh::instance()->field_container->end();
+       ++it) {
+    FieldID field_id = it->first();
+    int num_values = it->second()->get_num_value();
+    int value_type = it->second()->get_value_type();
+    int dof_per_value = it->second()->get_dof_per_value();
+    apf::Field* f = 
+    
+  m3dc1_ghost::instance()->field_container->insert(std::map<FieldID, m3dc1_field*>::value_type(*field_id, new m3dc1_field(*field_id, f, *num_values, *scalar_type, *num_dofs_per_value)));
+  
 }
 
 
