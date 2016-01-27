@@ -77,7 +77,6 @@ int m3dc1_scorec_finalize()
   // delete existing numbering
   apf::Numbering* old_n = m3dc1_mesh::instance()->mesh->findNumbering("m3dc1_global_node_id");
   if (old_n) destroyNumbering(old_n);
-  // commented out DUE TO SEG FAULT
   int node_glb_order=NODE_GLB_ORDER; 
   m3dc1_field_delete (&node_glb_order);
   m3dc1_gfield_delete (&node_glb_order);
@@ -87,7 +86,8 @@ int m3dc1_scorec_finalize()
   apf::Mesh2* mesh = m3dc1_mesh::instance()->mesh;
   mesh->destroyNative();
   destroyMesh(mesh);
-  
+
+  /*
   if (m3dc1_ghost::instance()->is_ghosted) {
     m3dc1_ghost::instance()->is_ghosted = false;
     apf::Mesh2* ghosted_mesh = m3dc1_ghost::instance()->mesh;
@@ -95,6 +95,7 @@ int m3dc1_scorec_finalize()
     printf("\n Here\n");
     apf::destroyMesh(ghosted_mesh);
   }
+  */
   
   
   PCU_Comm_Free();

@@ -40,7 +40,6 @@ int main(int argc, char** argv)
   mesh = apf::makeEmptyMdsMesh(gmi_load(".null"), osh_dim(om), false);
   osh_ghost(&om, 1);
   osh::toAPF(om, mesh);
-  mesh->verify();
 
   // Clean up and finalize
   osh_free(om);
