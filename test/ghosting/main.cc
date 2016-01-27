@@ -32,8 +32,7 @@ int main(int argc, char** argv)
   MPI_Init(&argc, &argv);
   m3dc1_scorec_init();
   
-  int op = 0, scalar_type = 0;
-  int value_type[] = {scalar_type, scalar_type};
+  int op = 0, scalar_type = M3DC1_REAL;
   int field_1 = 1, field_2 = 2, field_3 = 3;
   int num_values = 3, num_dofs = 6;
   int num_dofs_node = num_values * num_dofs;
@@ -57,17 +56,17 @@ int main(int argc, char** argv)
   m3dc1_field_create(&field_1,
 		     "field_1",
 		     &num_values,
-		     value_type,
+		     &scalar_type,
 		     &num_dofs);
   m3dc1_field_create(&field_2,
 		     "field_2",
 		     &num_values,
-		     value_type,
+		     &scalar_type,
 		     &num_dofs);
   m3dc1_field_create(&field_3,
 		     "field_3",
 		     &num_values,
-		     value_type,
+		     &scalar_type,
 		     &num_dofs);
 
   // fill field_1
