@@ -4743,6 +4743,7 @@ int m3dc1_gfield_printcompnorm(FieldID* /* in */ field_id,
 
   apf::Field* f = mf ->get_field();
   int dof_per_node = countComponents(f);
+  assert(dof_per_node == num_dof * 6);
   int num_comp=dof_per_node/C1TRIDOFNODE;
   vector<double> norms(dof_per_node/C1TRIDOFNODE);
   int j=0;
