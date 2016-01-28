@@ -342,44 +342,17 @@ void m3dc1_ghost::initialize()
     int num_values = it->second->get_num_value();
     int scalar_type = it->second->get_value_type();
     int num_dofs_per_value = it->second->get_dof_per_value();
-    apf::Field* f = it->second->get_field();
+    apf::Field* old_field = it->second->get_field();
+    apf::Field* new_field = mesh->findField(apf::getName(old_field));
     
-    m3dc1_ghost::instance()->field_container->insert(std::map<FieldID, m3dc1_field*>::value_type(field_id, new m3dc1_field(field_id, f, num_values, scalar_type, num_dofs_per_value)));
+    m3dc1_ghost::instance()->field_container->insert(
+        std::make_pair(field_id,
+          new m3dc1_field(field_id,
+                          new_field,
+                          num_values,
+                          scalar_type,
+                          num_dofs_per_value)));
   }
   
 }
 
-
-
-// Populate field container by synchronizing with m3dc1_mesh's fields
-
-/*
-m3dc1_ghost::int field_synchronize()
-{
-  if (!m3dc1_ghost::instance()->field_container)
-    m3dc1_ghost::instance()->field_container = new std::map<FieldID, m3dc1_field*>;
-*/
-
-  /* This is iteration 0. Perhaps creating a bunch of field related
-     variables to synchronize isn't all that efficient. Perhaps should
-     get rid of these variables subsequently. */
-
-/*
-  FieldID* field_id = m3dc1_mesh::instance()->field_container->get_field();
-  char* field_name = m3dc1_mesh::instance()->field_container->get_;
-  int* num_values = m3dc1_mesh::instance()->field_container->get_num_value();
-  int*  scalar_type = m3dc1_mesh::instance()->field_container->get_value_type();
-  int* num_dofs_per_value = m3dc1_mesh::instance()->field_container->get_dof_per_valu
-  int components = (*num_values)*(*scalar_type+1)*(*num_dofs_per_value);
-  apf::Field* f = createPackedField(m3dc1_mesh::instance()->mesh, field_name, components);
-  m3dc1_ghost::instance()->field_container->insert(std::map<FieldID, m3dc1_field*>::value_type(*field_id, new m3dc1_field(*field_id, f, *num_values, *scalar_type, *num_dofs_per_value)));
-  apf::freeze(f); // switch dof data from tag to array
-
-  if (*field_id>fieldIdMax)
-    fieldIdMax=*field_id;
-  double val[2]={0, 0};
-  m3dc1_field_assign(field_id, val, scalar_type);
-  return M3DC1_SUCCESS;
-}
-
-*/

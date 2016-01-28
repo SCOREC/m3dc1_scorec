@@ -150,10 +150,8 @@ int main(int argc, char** argv)
   printf("\nAdded field_3 to field_2.\n");
   m3dc1_gfield_printcompnorm(&field_2, "Updated field_2 on ghosted mesh");
   
-  // Clean up and finalize
-  m3dc1_field_delete(&field_1);
-  m3dc1_field_delete(&field_2);
-  m3dc1_field_delete(&field_3);
+  // Test field destruction
+  m3dc1_gfield_delete(&field_1);
   
   m3dc1_scorec_finalize();
   MPI_Finalize();
