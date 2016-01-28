@@ -44,10 +44,12 @@ m3dc1_ghost::m3dc1_ghost()
 m3dc1_ghost::~m3dc1_ghost()
 // *********************************************************
 {
+  if (!mesh)
+    return;
   std::set<int> fields_keep; 
   clean(fields_keep);
   mesh->destroyNative();
-  destroyMesh(mesh);
+  apf::destroyMesh(mesh);
 }
 
 void m3dc1_ghost:: clean(std::set<int>& fields_keep)
@@ -88,12 +90,20 @@ void m3dc1_ghost:: clean(std::set<int>& fields_keep)
   mesh->destroyTag(num_global_adj_node_tag);
   mesh->destroyTag(num_own_adj_node_tag);
 }
+
 m3dc1_ghost* m3dc1_ghost::_instance=NULL;
+
 m3dc1_ghost* m3dc1_ghost::instance()
 {
   if (_instance==NULL)
     _instance = new m3dc1_ghost();
   return _instance;
+}
+
+void m3dc1_ghost::destroy()
+{
+  delete _instance;
+  _instance = NULL;
 }
 
 // *********************************************************

@@ -68,11 +68,14 @@ int m3dc1_scorec_finalize()
   m3dc1_field_delete (&node_glb_order);
   m3dc1_gfield_delete (&node_glb_order);
 
-  // Destroy meshes
-  
-  apf::Mesh2* mesh = m3dc1_mesh::instance()->mesh;
-  mesh->destroyNative();
-  destroyMesh(mesh);
+  //actually destroy badly designed singletons.
+  //this was chosen over statically allocating the objects
+  //and having the runtime deallocate them in order to avoid
+  //possible issues linking to FORTRAN.
+  //feel free to make them static objects and see if that works
+  m3dc1_ghost::destroy();
+  m3dc1_mesh::destroy();
+  m3dc1_model::destroy();
 
   PCU_Comm_Free();
   return M3DC1_SUCCESS; 
@@ -3426,8 +3429,8 @@ int m3dc1_ghost_load(int* nlayers)
   if (m3dc1_model::instance()->local_planeid == 0){
     assert(*nlayers>0);
     m3dc1_ghost::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
-     m3dc1_ghost::instance()->nlayers = *nlayers;
-     m3dc1_ghost::instance()->is_ghosted = true;
+    m3dc1_ghost::instance()->nlayers = *nlayers;
+    m3dc1_ghost::instance()->is_ghosted = true;
     
     // Set up ghosted mesh via omega_h
     osh_t osh_mesh = osh::fromAPF(m3dc1_mesh::instance()->mesh);
@@ -3435,9 +3438,7 @@ int m3dc1_ghost_load(int* nlayers)
     osh::toAPF(osh_mesh, m3dc1_ghost::instance()->mesh);
     osh_free(osh_mesh);
   } else {
-    m3dc1_ghost::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
-    // m3dc1_ghost::instance()->mesh->verify();    // For testing
-
+    assert(0);
   }
   m3dc1_ghost::instance()->initialize();
   return M3DC1_SUCCESS;

@@ -81,6 +81,7 @@ public:
   m3dc1_model();
   ~m3dc1_model();
   static m3dc1_model* instance();
+  static void destroy();
 
   void load_analytic_model(const char *name);
 

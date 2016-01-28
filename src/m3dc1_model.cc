@@ -99,15 +99,21 @@ m3dc1_model::~m3dc1_model()
     delete ptr[1];
     delete []ptr;
   }
-//  PUMI_Geom_Del(model);
 }
 
 m3dc1_model* m3dc1_model::_instance=NULL;
+
 m3dc1_model* m3dc1_model::instance()
 {
   if (_instance==NULL)
     _instance = new m3dc1_model();
   return _instance;
+}
+
+void m3dc1_model::destroy()
+{
+  delete _instance;
+  _instance = NULL;
 }
 
 void edgeFunction(double const p[2], double *xyz, void*  data)

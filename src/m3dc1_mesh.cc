@@ -201,6 +201,8 @@ m3dc1_mesh::m3dc1_mesh()
 m3dc1_mesh::~m3dc1_mesh()
 // *********************************************************
 {
+  if (!mesh)
+    return;
   std::set<int> fields_keep; 
   clean(fields_keep);
   mesh->destroyNative();
@@ -238,18 +240,25 @@ void m3dc1_mesh:: clean(std::set<int>& fields_keep)
   removeTagFromDimension(mesh, num_global_adj_node_tag, 0);
   removeTagFromDimension(mesh, num_own_adj_node_tag, 0);
 
-  // destroy mesh
   mesh->destroyTag(local_entid_tag);
   mesh->destroyTag(own_partid_tag);
   mesh->destroyTag(num_global_adj_node_tag);
   mesh->destroyTag(num_own_adj_node_tag);
 }
+
 m3dc1_mesh* m3dc1_mesh::_instance=NULL;
+
 m3dc1_mesh* m3dc1_mesh::instance()
 {
   if (_instance==NULL)
     _instance = new m3dc1_mesh();
   return _instance;
+}
+
+void m3dc1_mesh::destroy()
+{
+  delete _instance;
+  _instance = NULL;
 }
 
 // *********************************************************

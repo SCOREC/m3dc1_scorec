@@ -33,6 +33,7 @@ public:
   m3dc1_mesh();
   ~m3dc1_mesh();
   static m3dc1_mesh* instance();
+  static void destroy();
   // functions
   void reset();
   void clean( std::set<int> & fields_keep);

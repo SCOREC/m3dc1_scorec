@@ -28,6 +28,7 @@ public:
   m3dc1_ghost();
   ~m3dc1_ghost();
   static m3dc1_ghost* instance();
+  static void destroy();
   // functions
   void reset();
   void clean( std::set<int> & fields_keep);
