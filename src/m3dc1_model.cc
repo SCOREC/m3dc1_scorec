@@ -99,6 +99,7 @@ m3dc1_model::~m3dc1_model()
     delete ptr[1];
     delete []ptr;
   }
+  gmi_destroy(model);
 }
 
 m3dc1_model* m3dc1_model::_instance=NULL;

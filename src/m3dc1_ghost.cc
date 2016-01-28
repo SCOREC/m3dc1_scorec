@@ -67,7 +67,7 @@ void m3dc1_ghost:: clean(std::set<int>& fields_keep)
       if(!PCU_Comm_Self()) std::cout<<" destroy field "<<getName(f_it->second->get_field())<<std::endl;
       FieldID id = f_it->first;
       std::map<FieldID, m3dc1_field*>::iterator it_next=++f_it;
-      m3dc1_field_delete(&id);
+      m3dc1_gfield_delete(&id);
       f_it=it_next;
     }
     //field_container->clear();
@@ -346,12 +346,13 @@ void m3dc1_ghost::initialize()
     apf::Field* new_field = mesh->findField(apf::getName(old_field));
     
     m3dc1_ghost::instance()->field_container->insert(
-        std::make_pair(field_id,
+        std::map<FieldID, m3dc1_field*>::value_type(field_id,
           new m3dc1_field(field_id,
                           new_field,
                           num_values,
                           scalar_type,
                           num_dofs_per_value)));
+    apf::freeze(new_field);
   }
   
 }

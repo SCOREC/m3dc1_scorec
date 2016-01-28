@@ -316,6 +316,7 @@ int m3dc1_mesh_load(const char* mesh_file)
   if (m3dc1_model::instance()->local_planeid == 0) 
   {
     m3dc1_mesh::instance()->mesh = apf::loadMdsMesh(m3dc1_model::instance()->model, mesh_file);
+    apf::disownMdsModel(m3dc1_mesh::instance()->mesh);
     /* vertex load balancing */
     Parma_PrintPtnStats(m3dc1_mesh::instance()->mesh, "initial");
     // will not work not non-man geo 
@@ -785,7 +786,13 @@ int* /*in*/ scalar_type, int* /*in*/ num_dofs_per_value)
   // only need to tell APF all dofs are attached to mesh vertex
   int components = (*num_values)*(*scalar_type+1)*(*num_dofs_per_value);
   apf::Field* f = createPackedField(m3dc1_mesh::instance()->mesh, field_name, components);
-  m3dc1_mesh::instance()->field_container->insert(std::map<FieldID, m3dc1_field*>::value_type(*field_id, new m3dc1_field(*field_id, f, *num_values, *scalar_type, *num_dofs_per_value)));
+  m3dc1_mesh::instance()->field_container->insert(
+      std::map<FieldID, m3dc1_field*>::value_type(*field_id,
+          new m3dc1_field(*field_id,
+                          f,
+                          *num_values,
+                          *scalar_type,
+                          *num_dofs_per_value)));
   apf::freeze(f); // switch dof data from tag to array
 
 #ifdef DEBUG
@@ -3429,6 +3436,7 @@ int m3dc1_ghost_load(int* nlayers)
   if (m3dc1_model::instance()->local_planeid == 0){
     assert(*nlayers>0);
     m3dc1_ghost::instance()->mesh = apf::makeEmptyMdsMesh(m3dc1_model::instance()->model, 2, false);
+    apf::disownMdsModel(m3dc1_ghost::instance()->mesh);
     m3dc1_ghost::instance()->nlayers = *nlayers;
     m3dc1_ghost::instance()->is_ghosted = true;
     
