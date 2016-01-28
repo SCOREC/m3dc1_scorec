@@ -2535,10 +2535,12 @@ int m3dc1_field_printcompnorm(FieldID* /* in */ field_id, const char* info)
   vector<double> norms(values_per_node);
   int values_in_array = dof_in_array / dof_per_value;
   int nnodes = dof_in_array / dof_per_node;
-  for(int i = 0; i < nnodes; ++i)
-    for(int j = 0; j < values_per_node; ++j)
-      for(int k = 0; k < dof_per_value; ++k)
-         norms.at(j) += square(array[i * dof_per_node + j * dof_per_value + k]);
+  double* p = array;
+  for (int i = 0; i < nnodes; ++i)
+    for (int j = 0; j < values_per_node; ++j)
+      for (int k = 0; k < dof_per_value; ++k)
+        norms.at(j) += square(*p++);
+  assert(nnodes * values_per_node * dof_per_value == dof_in_array);
   vector<double> buff = norms;
   MPI_Allreduce(&buff[0], &norms[0], values_per_node,
       MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
