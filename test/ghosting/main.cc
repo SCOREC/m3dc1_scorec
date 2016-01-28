@@ -71,7 +71,6 @@ int main(int argc, char** argv)
 
   // fill field_1
   printf("\n");
-  m3dc1_field_printcompnorm(&field_1, "field_1 init info");
   for(int inode=0; inode<num_vertex; inode++)
   {
     double xyz[3];
@@ -88,7 +87,6 @@ int main(int argc, char** argv)
 
   // fill field_2
   printf("\n");
-  m3dc1_field_printcompnorm(&field_2, "field_2 init info");
   for(int inode=0; inode<num_vertex; inode++)
   {
     double xyz[3];
@@ -96,7 +94,7 @@ int main(int argc, char** argv)
     if(num_plane==1) assert(AlmostEqualDoubles(xyz[2], 0, 1e-6, 1e-6));
     vector<double> dofs(num_dofs_node*(1+scalar_type));
     for(int i=0; i<num_dofs_node*(1+scalar_type); i++)
-      dofs.at(i)=xyz[i%5];
+      dofs.at(i)=xyz[i%3];
     m3dc1_ent_setdofdata(&vertex_dim, &inode, &field_2,
 			 &num_dofs_node, &dofs.at(0));
   }
@@ -104,7 +102,6 @@ int main(int argc, char** argv)
 
   // fill field_3
   printf("\n");
-  m3dc1_field_printcompnorm(&field_3, "field_3 init info");
   for(int inode=0; inode<num_vertex; inode++)
   {
     double xyz[3];
@@ -112,7 +109,7 @@ int main(int argc, char** argv)
     if(num_plane==1) assert(AlmostEqualDoubles(xyz[2], 0, 1e-6, 1e-6));
     vector<double> dofs(num_dofs_node*(1+scalar_type));
     for(int i=0; i<num_dofs_node*(1+scalar_type); i++)
-      dofs.at(i)=xyz[i%7];
+      dofs.at(i)=xyz[i%3];
     m3dc1_ent_setdofdata(&vertex_dim, &inode, &field_3,
 			 &num_dofs_node, &dofs.at(0));
   }
