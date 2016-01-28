@@ -4,7 +4,7 @@ Refer to the "scorec_build/tpl_build.txt" file for compiling
 the dependencies including PETSc on SCOREC systems.
 
 (0) make a directory for your M3DC1 work,
-    we will call it PREFIX.
+    we will call it PREFIX
 
 mkdir -p $PREFIX
 cd $PREFIX
