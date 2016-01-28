@@ -11,7 +11,10 @@
 #include "m3dc1_matrix.h"
 #include "m3dc1_model.h"
 #include "m3dc1_mesh.h"
+#ifdef M3DC1_OMEGA_H
 #include "m3dc1_ghost.h"
+#include "apfOmega_h.h"
+#endif
 #include "m3dc1_field.h"
 #include <mpi.h>
 #include <PCU.h>
@@ -24,7 +27,7 @@
 #include "m3dc1_sizeField.h"
 #include "ReducedQuinticImplicit.h"
 #include "apfMesh2.h"
-#include "apfOmega_h.h"
+
 
 bool m3dc1_double_isequal(double A, double B)
 {
@@ -66,14 +69,18 @@ int m3dc1_scorec_finalize()
   if (old_n) destroyNumbering(old_n);
   int node_glb_order=NODE_GLB_ORDER; 
   m3dc1_field_delete (&node_glb_order);
+  #ifdef M3DC1_OMEGA_H  
   m3dc1_gfield_delete (&node_glb_order);
+  #endif
 
   //actually destroy badly designed singletons.
   //this was chosen over statically allocating the objects
   //and having the runtime deallocate them in order to avoid
   //possible issues linking to FORTRAN.
   //feel free to make them static objects and see if that works
+  #ifdef M3DC1_OMEGA_H
   m3dc1_ghost::destroy();
+  #endif
   m3dc1_mesh::destroy();
   m3dc1_model::destroy();
 
@@ -3428,6 +3435,7 @@ int m3dc1_epetra_freeze(int* matrix_id)
 
 // Ghosted Mesh Field Functions
 
+#ifdef M3DC1_OMEGA_H
 
 //*******************************************************
 int m3dc1_ghost_load(int* nlayers)
@@ -4652,6 +4660,6 @@ int m3dc1_gfield_max (FieldID* field_id,
 
   return M3DC1_SUCCESS;
 }
-
+#endif // #ifndef OMEGA_H
 
 
