@@ -64,7 +64,7 @@ void m3dc1_ghost:: clean(std::set<int>& fields_keep)
         f_it++;
         continue;
       }
-      if(!PCU_Comm_Self()) std::cout<<" destroy field "<<getName(f_it->second->get_field())<<std::endl;
+      // if(!PCU_Comm_Self()) std::cout<<" destroy field "<<getName(f_it->second->get_field())<<std::endl;
       FieldID id = f_it->first;
       std::map<FieldID, m3dc1_field*>::iterator it_next=++f_it;
       m3dc1_gfield_delete(&id);
