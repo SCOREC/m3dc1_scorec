@@ -3450,7 +3450,7 @@ int m3dc1_ghost_load(int* nlayers)
     
     // Set up ghosted mesh via omega_h
     osh_t osh_mesh = osh::fromAPF(m3dc1_mesh::instance()->mesh);
-    osh_ghost(&osh_mesh, m3dc1_ghost::instance()->nlayers);
+    osh_ghost(osh_mesh, m3dc1_ghost::instance()->nlayers);
     osh::toAPF(osh_mesh, m3dc1_ghost::instance()->mesh);
     osh_free(osh_mesh);
   } else {

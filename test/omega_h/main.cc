@@ -38,7 +38,7 @@ int main(int argc, char** argv)
   mesh->destroyNative();
   apf::destroyMesh(mesh);
   mesh = apf::makeEmptyMdsMesh(gmi_load(".null"), osh_dim(om), false);
-  osh_ghost(&om, 1);
+  osh_ghost(om, 1);
   osh::toAPF(om, mesh);
 
   // Clean up and finalize
