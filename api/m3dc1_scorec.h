@@ -155,6 +155,9 @@ int m3dc1_field_max (FieldID* field_id, double * max_val, double * min_val);
 
 
 /** Ghosted mesh field manangement */
+int m3dc1_ent_getghostdofdata (int* /* in */ ent_dim, int* /* in */ ent_id, FieldID* field_id, int* /* out */ num_dof, double* dof_data);
+int m3dc1_ent_getghostlocaldofid(int* /* in */ ent_dim, int* /* in */ ent_id, FieldID* field_id, 
+                       int* /* out */ start_dof_id, int* /* out */ end_dof_id_plus_one);  //entdofs_
 int m3dc1_gfield_getnewid (FieldID* /*out*/field_id);
 // ordering should be reused for field and matrix??? -Fan
 // is num_dofs input or output?

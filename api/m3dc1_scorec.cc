@@ -3460,6 +3460,65 @@ int m3dc1_ghost_load(int* nlayers)
   return M3DC1_SUCCESS;
 }
 
+//*******************************************************
+int m3dc1_ent_getghostdofdata (int* /* in */ ent_dim,
+			       int* /* in */ ent_id,
+			       FieldID* field_id, 
+			       int* /* out */ num_dof,
+			       double* dof_data)
+//*******************************************************
+{
+  assert(*ent_dim==0);
+  apf::MeshEntity* e =getMdsEntity(m3dc1_ghost::instance()->mesh, *ent_dim, *ent_id);
+  if (!e)
+    return M3DC1_FAILURE;
+  m3dc1_field * mf = (*(m3dc1_ghost::instance()->field_container))[*field_id];
+  apf::Field* f = mf->get_field();
+
+  getComponents(f, e, 0, dof_data);
+  *num_dof = (mf->get_value_type())?countComponents(f)/2:countComponents(f);
+#ifdef DEBUG
+  for(int i=0; i<*num_dof*(1+mf->get_value_type()); i++)
+    assert(!value_is_nan(dof_data[i]));
+  int start_dof_id,end_dof_id_plus_one;
+  m3dc1_ent_getghostlocaldofid(ent_dim, ent_id,field_id, &start_dof_id, &end_dof_id_plus_one);
+  double* data;
+  m3dc1_gfield_getdataptr(field_id, &data);
+  int start=start_dof_id*(1+mf->get_value_type());
+  for( int i=0; i< *num_dof; i++)
+    assert(data[start++]==dof_data[i]);
+#endif
+  return M3DC1_SUCCESS;
+}
+
+
+//*******************************************************
+int m3dc1_ent_getghostlocaldofid(int* /* in */ ent_dim,
+				 int* /* in */ ent_id,
+				 FieldID* field_id, 
+				 int* /* out */ start_dof_id,
+				 int* /* out */ end_dof_id_plus_one)
+//*******************************************************
+{
+  if (*ent_dim!=0)
+    return M3DC1_FAILURE;
+
+  apf::MeshEntity* e =getMdsEntity(m3dc1_ghost::instance()->mesh, *ent_dim, *ent_id);
+  if (!e)
+    return M3DC1_FAILURE;
+
+  if (!m3dc1_ghost::instance()->field_container || !m3dc1_ghost::instance()->field_container->count(*field_id))
+    return M3DC1_FAILURE;
+  m3dc1_field * mf = (*(m3dc1_ghost::instance()->field_container))[*field_id];
+  int num_val =  mf->get_num_value();
+  int dof_per_value = mf->get_dof_per_value();
+  int dof_per_node = dof_per_value * num_val;
+  *start_dof_id = *ent_id*dof_per_node;
+  *end_dof_id_plus_one = *start_dof_id +dof_per_node;
+  return M3DC1_SUCCESS;
+}
+
+
 
 //*******************************************************
 int m3dc1_ghost_getnument (int* /* in*/ ent_dim,
@@ -3891,8 +3950,8 @@ int m3dc1_gfield_add(FieldID* /*inout*/ field_id1,
   int dofPerEntDummy[2];
   for(int inode=0; inode<num_vtx; inode++)
   {
-    m3dc1_ent_getdofdata (&vertex_type, &inode, field_id1, dofPerEntDummy, &dofs1[0]);
-    m3dc1_ent_getdofdata (&vertex_type, &inode, field_id2, dofPerEntDummy+1, &dofs2[0]);
+    m3dc1_ent_getghostdofdata (&vertex_type, &inode, field_id1, dofPerEntDummy, &dofs1[0]);
+    m3dc1_ent_getghostdofdata (&vertex_type, &inode, field_id2, dofPerEntDummy+1, &dofs2[0]);
     for(int i=0; i<dofMin*(1+mf1->get_value_type()); i++)
       dofs1.at(i)+=dofs2.at(i);
     m3dc1_ent_setdofdata (&vertex_type, &inode, field_id1, &dofPerEnt1, &dofs1[0]);
@@ -3925,7 +3984,7 @@ int m3dc1_gfield_mult(FieldID* /*inout*/ field_id,
   assert(dofPerEnt<=sizeof(dofs)/sizeof(double)*(1+value_type));
   for(int inode=0; inode<num_vtx; inode++)
   {
-    m3dc1_ent_getdofdata (&vertex_type, &inode, field_id, &dofPerEnt, dofs);
+    m3dc1_ent_getghostdofdata (&vertex_type, &inode, field_id, &dofPerEnt, dofs);
     if(*scalar_type==0)
     {
       for(int i=0; i<dofPerEnt*(1+value_type); i++)
@@ -4002,8 +4061,8 @@ int m3dc1_gfield_copy(FieldID* /* out */ field_id1,
   int dofPerEntDummy[2];
   for(int inode=0; inode<num_vtx; inode++)
   {
-    m3dc1_ent_getdofdata (&vertex_type, &inode, field_id1, dofPerEntDummy, &dofs1[0]);
-    m3dc1_ent_getdofdata (&vertex_type, &inode, field_id2, dofPerEntDummy+1, &dofs2[0]);
+    m3dc1_ent_getghostdofdata (&vertex_type, &inode, field_id1, dofPerEntDummy, &dofs1[0]);
+    m3dc1_ent_getghostdofdata (&vertex_type, &inode, field_id2, dofPerEntDummy+1, &dofs2[0]);
     for(int i=0; i<dofMin*(1+mf1->get_value_type()); i++)
       dofs1.at(i)=dofs2.at(i);
     m3dc1_ent_setdofdata (&vertex_type, &inode, field_id1, &dofPerEnt1, &dofs1[0]);
@@ -4130,7 +4189,7 @@ int m3dc1_gfield_isnan(FieldID* /* in */ field_id,
   double dofs[FIXSIZEBUFF];
   for(int inode=0; inode<num_vtx; inode++)
   {
-    m3dc1_ent_getdofdata (&vertex_type, &inode, field_id, &dofPerEnt, dofs);
+    m3dc1_ent_getghostdofdata (&vertex_type, &inode, field_id, &dofPerEnt, dofs);
     for(int i=0; i<dofPerEnt; i++)
       if(value_is_nan(dofs[i])) 
         *isnan=1;
@@ -4153,7 +4212,7 @@ int m3dc1_gfield_write(FieldID* field_id,
   std::vector<double> dofs(dofPerEnt*(1+mf->get_value_type()),0);
   for(int inode=0; inode<num_vtx; inode++)
   {
-    m3dc1_ent_getdofdata (&vertex_type, &inode, field_id, &dofPerEnt, &dofs[0]);
+    m3dc1_ent_getghostdofdata (&vertex_type, &inode, field_id, &dofPerEnt, &dofs[0]);
     for(int i=0; i<dofPerEnt; i++)
     {
       for(int j=0; j<1+mf->get_value_type(); j++)
@@ -4648,7 +4707,7 @@ int m3dc1_gfield_max (FieldID* field_id,
   std::vector<double> maxVal(dofPerEnt, -1e30), minVal(dofPerEnt,1e30), dofs(dofPerEnt);
   for(int inode=0; inode<num_vtx; inode++)
   {
-    m3dc1_ent_getdofdata (&vertex_type, &inode, field_id, &dofPerEnt, &dofs[0]);
+    m3dc1_ent_getghostdofdata (&vertex_type, &inode, field_id, &dofPerEnt, &dofs[0]);
     for(int i=0; i<dofPerEnt; i++)
     {
       if(maxVal[i]<dofs[i]) maxVal[i]=dofs[i];
