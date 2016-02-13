@@ -39,8 +39,12 @@ enum m3dc1_matrix_type { /*0*/ M3DC1_MULTIPLY=0,
 
 enum m3dc1_matrix_status { /*0*/ M3DC1_NOT_FIXED=0,
                            /*2*/ M3DC1_FIXED};
-
+  
 bool m3dc1_double_isequal(double A, double B);
+
+// Global variable to keep track of ghosted mesh
+enum ghosting {uninit, init};
+static enum ghosting global_ghost_state = uninit;
 
 int m3dc1_scorec_init();
 int m3dc1_scorec_finalize();
@@ -69,13 +73,13 @@ int m3dc1_model_getmaxcoord(double* /* out */ x_max, double* /* out */ y_max); /
 /** mesh functions */
 
 int m3dc1_mesh_load(const char* mesh_file);
-int m3dc1_ghost_load(int* nlayers); // For loading ghost mesh with nlayers
-
+int m3dc1_ghost_load(int* nlayers); // For loading ghosted mesh with nlayers
+int m3dc1_ghost_delete(); // For deleting a ghosted mesh
+  
 int m3dc1_mesh_write(const char* filename, int *option); // 0: vtk file with field; 1:smb file
 int m3dc1_mesh_build3d(int* num_field, int* field_id, int* num_dofs_per_value);
 
 int m3dc1_mesh_getnument (int* /* in*/ ent_dim, int* /* out */ num_ent);
-int m3dc1_ghost_getnument (int* /* in*/ ent_dim, int* /* out */ num_ent);
 int m3dc1_mesh_getnumownent (int* /* in*/ ent_dim, int* /* out */ num_ent); //numownedents_
 int m3dc1_mesh_getnumglobalent (int* /* in*/ ent_dim, int* /* out */ global_num_ent); //numglobalents_
 
@@ -153,53 +157,7 @@ int m3dc1_field_sum_plane (FieldID* /* in */ field_id);
 int m3dc1_field_printcompnorm(FieldID* /* in */ field_id, const char* info);
 int m3dc1_field_max (FieldID* field_id, double * max_val, double * min_val);
 
-
-/** Ghosted mesh field manangement */
-int m3dc1_ent_getghostdofdata (int* /* in */ ent_dim, int* /* in */ ent_id, FieldID* field_id, int* /* out */ num_dof, double* dof_data);
-int m3dc1_ent_getghostlocaldofid(int* /* in */ ent_dim, int* /* in */ ent_id, FieldID* field_id, 
-                       int* /* out */ start_dof_id, int* /* out */ end_dof_id_plus_one);  //entdofs_
-int m3dc1_gfield_getnewid (FieldID* /*out*/field_id);
-// ordering should be reused for field and matrix??? -Fan
-// is num_dofs input or output?
-// *value_type is either M3DC1_REAL or M3DC1_COMPLEX
-int m3dc1_gfield_create (FieldID* /*in*/ field_id, const char* /* in */ field_name, int* num_values, int* value_type, int* num_dofs_per_value);
-int m3dc1_gfield_delete (FieldID* /*in*/ field_id); 
-
-int m3dc1_gfield_getinfo(FieldID* /*in*/ field_id, char* /* out*/ field_name, int* num_values, int* value_type, int* total_num_dof);
-
-int m3dc1_gfield_exist(FieldID* field_id, int * exist);//checkppplveccreated_
-int m3dc1_gfield_sync (FieldID* /* in */ field_id); // updatesharedppplvecvals_;
-int m3dc1_gfield_sum (FieldID* /* in */ field_id); // sumsharedppplvecvals_
-int m3dc1_gfield_sumsq (FieldID* /* in */ field_id, double* /* out */ sum);
-
-/** field dof functions */
-int m3dc1_gfield_getlocaldofid (FieldID* field_id, int* /* out */ start_dof_id, int* /* out */ end_dof_id_plus_one); 
-int m3dc1_gfield_getowndofid (FieldID* field_id, int* /* out */ start_dof_id, int* /* out */ end_dof_id_plus_one);  
-int m3dc1_gfield_getglobaldofid ( FieldID* field_id, int* /* out */ start_dof_id, int* /* out */ end_dof_id_plus_one);  
-
-int m3dc1_gfield_getnumlocaldof (FieldID* field_id, int* /* out */ num_local_dof);
-int m3dc1_gfield_getnumowndof (FieldID* field_id, int* /* out */ num_own_dof);
-int m3dc1_gfield_getnumglobaldof (FieldID* field_id, int* /* out */ num_global_dof);
-int m3dc1_gfield_getdataptr (FieldID* field_id, double** pts);
-
-int m3dc1_gfield_add(FieldID* /*inout*/ field1, FieldID* /*in*/ field2);
-int m3dc1_gfield_mult(FieldID* /*inout*/ field, double* fac, int * scalar_type);
-int m3dc1_gfield_assign(FieldID* /*inout*/ field, double* fac, int * scalar_type);
-int m3dc1_gfield_copy(FieldID* /* out */ filed1, FieldID* /* in */ field2);
-int m3dc1_gfield_retrieve (FieldID* /* in */ filed1, double * /*out*/ data, int * /* in */size);
-int m3dc1_gfield_set (FieldID* /* in */ filed1, double * /*in*/ data, int * /* in */size);
-int m3dc1_gfield_insert(FieldID* /* in */ field, int /* in */ * local_dof, int * /* in */ size, double* /* in */ values, int * type, int * /* in */ op);
-int m3dc1_gfield_isnan(FieldID* /* in */ field, int * isnan);
-int m3dc1_gfield_compare(FieldID* field_id_1, FieldID* field_id_2);
-int m3dc1_gfield_write(FieldID* field, const char* file_name);
-int m3dc1_gfield_print(FieldID* field);
-int m3dc1_gfield_sum_plane (FieldID* /* in */ field_id);
-int m3dc1_gfield_printcompnorm(FieldID* /* in */ field_id, const char* info);
-int m3dc1_gfield_max (FieldID* field_id, double * max_val, double * min_val);
-
 int m3dc1_model_getplaneid(int * /* out */ plane_id);
-
-
 int m3dc1_ent_getlocaldofid(int* /* in */ ent_dim, int* /* in */ ent_id, FieldID* field_id, 
                        int* /* out */ start_dof_id, int* /* out */ end_dof_id_plus_one);  //entdofs_
 int m3dc1_ent_getglobaldofid (int* /* in */ ent_dim, int* /* in */ ent_id, FieldID* field_id, 

@@ -68,8 +68,9 @@ int main(int argc, char** argv)
 		     &num_values,
 		     &scalar_type,
 		     &num_dofs);
-
+  
   // fill field_1
+  
   printf("\n");
   for(int inode=0; inode<num_vertex; inode++)
   {
@@ -84,7 +85,7 @@ int main(int argc, char** argv)
 			 &num_dofs_node, &dofs.at(0));
   }
   m3dc1_field_printcompnorm(&field_1, "field_1 after set info");
-
+  
   // fill field_2
   printf("\n");
   for(int inode=0; inode<num_vertex; inode++)
@@ -99,7 +100,7 @@ int main(int argc, char** argv)
 			 &num_dofs_node, &dofs.at(0));
   }
   m3dc1_field_printcompnorm(&field_2, "field_2 after set info");
-
+  
   // fill field_3
   printf("\n");
   for(int inode=0; inode<num_vertex; inode++)
@@ -116,42 +117,42 @@ int main(int argc, char** argv)
   m3dc1_field_printcompnorm(&field_3, "field_3 after set info");
   
   // Initialize ghosted mesh
-  
   int nlayers = 1;
   m3dc1_ghost_load(&nlayers);
-
-  // Check fields exist on ghosted mesh
   
+  // Check fields exist on ghosted mesh
   int exists_1, exists_2, exists_3;
-  m3dc1_gfield_exist(&field_1, &exists_1);
+  m3dc1_field_exist(&field_1, &exists_1);
   printf("\nField 1 on ghosted mesh exists: %d", exists_1);
 
-  m3dc1_gfield_exist(&field_2, &exists_2);
+  m3dc1_field_exist(&field_2, &exists_2);
   printf("\nField 2 on ghosted mesh exists: %d", exists_2);
 
-  m3dc1_gfield_exist(&field_3, &exists_3);
+  m3dc1_field_exist(&field_3, &exists_3);
   printf("\nField 3 on ghosted mesh exists: %d\n", exists_3);
   
   // Compute the norms of the fields on the ghosted_mesh
   printf("\n");
-  m3dc1_gfield_printcompnorm(&field_1, "field_1 on ghosted mesh");
-  m3dc1_gfield_printcompnorm(&field_2, "field_2 on ghosted mesh");
-  m3dc1_gfield_printcompnorm(&field_3, "field_3 on ghosted mesh");
-
-
+  m3dc1_field_printcompnorm(&field_1, "field_1 on ghosted mesh");
+  m3dc1_field_printcompnorm(&field_2, "field_2 on ghosted mesh");
+  m3dc1_field_printcompnorm(&field_3, "field_3 on ghosted mesh");
+ 
   // Scale field 1 on the ghosted by a constant and check norm again
   double factor = 2.0;
   printf("\nfield_1 scaled by %1.1f\n", factor);
-  m3dc1_gfield_mult(&field_1, &factor, &scalar_type);
-  m3dc1_gfield_printcompnorm(&field_1, "scaled field_1 on ghosted mesh");
+  m3dc1_field_mult(&field_1, &factor, &scalar_type);
+  m3dc1_field_printcompnorm(&field_1, "scaled field_1 on ghosted mesh");
 
   // Add field_2 and field_3 and store result on field_2
-  m3dc1_gfield_add(&field_2, &field_3);
+  m3dc1_field_add(&field_2, &field_3);
   printf("\nAdded field_3 to field_2.\n");
-  m3dc1_gfield_printcompnorm(&field_2, "Updated field_2 on ghosted mesh");
-  
+  m3dc1_field_printcompnorm(&field_2, "Updated field_2 on ghosted mesh");
+
   // Test field destruction
-  m3dc1_gfield_delete(&field_1);
+  m3dc1_field_delete(&field_1);
+
+  // Test ghost mesh deletion
+  m3dc1_ghost_delete();
   
   m3dc1_scorec_finalize();
   MPI_Finalize();

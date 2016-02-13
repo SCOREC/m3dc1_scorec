@@ -33,7 +33,7 @@ m3dc1_ghost::m3dc1_ghost()
 {
   mesh = NULL;
   nlayers = 0;
-  is_ghosted = false;
+  //is_ghosted = false;
   field_container=NULL;
   reset();
   ordering_opt=M3DC1_NO_ORDER;
@@ -67,7 +67,7 @@ void m3dc1_ghost:: clean(std::set<int>& fields_keep)
       // if(!PCU_Comm_Self()) std::cout<<" destroy field "<<getName(f_it->second->get_field())<<std::endl;
       FieldID id = f_it->first;
       std::map<FieldID, m3dc1_field*>::iterator it_next=++f_it;
-      m3dc1_gfield_delete(&id);
+      m3dc1_field_delete(&id);
       f_it=it_next;
     }
     //field_container->clear();
@@ -84,7 +84,8 @@ void m3dc1_ghost:: clean(std::set<int>& fields_keep)
   removeTagFromDimension(mesh, num_own_adj_node_tag, 0);
 
   // destroy mesh
-  is_ghosted = false;
+  //is_ghosted = false;
+  global_ghost_state = uninit;
   mesh->destroyTag(local_entid_tag);
   mesh->destroyTag(own_partid_tag);
   mesh->destroyTag(num_global_adj_node_tag);
@@ -354,6 +355,8 @@ void m3dc1_ghost::initialize()
                           num_dofs_per_value)));
     apf::freeze(new_field);
   }
-  
+
+  // Set global tracking tag
+  global_ghost_state = init;
 }
 
