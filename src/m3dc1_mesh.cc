@@ -229,7 +229,7 @@ void m3dc1_mesh:: clean(std::set<int>& fields_keep)
     }
     //field_container->clear();
   }
-  if(!fields_keep.size()) {delete field_container; field_container=0;}
+  if(!fields_keep.size() && field_container) {delete field_container; field_container=0;}
 
   // destroy tag data
   for (int d=0; d<4; ++d)
