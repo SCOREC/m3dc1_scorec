@@ -11,8 +11,8 @@
 #include "m3dc1_matrix.h"
 #include "m3dc1_model.h"
 #include "m3dc1_mesh.h"
-#ifdef M3DC1_OMEGA_H
 #include "m3dc1_ghost.h"
+#ifdef M3DC1_OMEGA_H
 #include "apfOmega_h.h"
 #endif
 #include "m3dc1_field.h"
@@ -69,22 +69,20 @@ int m3dc1_scorec_finalize()
   if (old_n) destroyNumbering(old_n);
   int node_glb_order=NODE_GLB_ORDER; 
   m3dc1_field_delete (&node_glb_order);
-  #ifdef M3DC1_OMEGA_H
+#ifdef M3DC1_OMEGA_H
   global_ghost_state = init;
-  m3dc1_field_delete (&node_glb_order);
-  #endif
+#endif
 
   //actually destroy badly designed singletons.
   //this was chosen over statically allocating the objects
   //and having the runtime deallocate them in order to avoid
   //possible issues linking to FORTRAN.
   //feel free to make them static objects and see if that works
-  #ifdef M3DC1_OMEGA_H
+#ifdef M3DC1_OMEGA_H
   m3dc1_ghost::destroy();
-  #endif
+#endif
   m3dc1_mesh::destroy();
   m3dc1_model::destroy();
-
   PCU_Comm_Free();
   return M3DC1_SUCCESS; 
 }
@@ -651,6 +649,38 @@ int m3dc1_ent_ismine (int* /* in */ ent_dim, int* /* in */ ent_id,
   return M3DC1_SUCCESS;
 }
 
+
+//*******************************************************
+int m3dc1_ent_isghost (int* /* in */ ent_dim,
+		       int* /* in */ ent_id, 
+		       int* /* out */ isghost)
+//*******************************************************
+{
+  if (global_ghost_state != init)
+    *isghost = 0;
+  else {
+    apf::Mesh2* m = NULL;
+    m = m3dc1_ghost::instance()->mesh;    
+    apf::MeshEntity* e = getMdsEntity(m, *ent_dim, *ent_id);
+    if (!e)
+    {
+      std::cout<<"[P"<<PCU_Comm_Self()<<"] "<<__func__<<": entity of id "<<*ent_id<<" doesn't exist\n";
+      return M3DC1_FAILURE;
+    }
+
+    apf::MeshTag* own_tag = m->findTag("owner");
+    int own_partid;
+    assert (own_tag);
+    m->getIntTag(e, own_tag, &own_partid);
+    if (own_partid != PCU_Comm_Self())   
+      *isghost = 1;
+    else
+      *isghost = 0;
+  }
+  return M3DC1_SUCCESS;
+}
+
+
 // node-specific functions
 //*******************************************************
 int m3dc1_node_getcoord (int* /* in */ node_id, double* /* out */ coord)
@@ -838,13 +868,13 @@ int m3dc1_node_getcurv (int* /* in */ node_id, double* /* out */ curv)
     }
   
   *curv=0.0;
-  gmi_ent* gent;  
+  gmi_ent* gent = NULL;  
   if (global_ghost_state != init)
-    gmi_ent* gent= (gmi_ent*)(m3dc1_mesh::instance()->mesh->toModel(vt));
+    gent = (gmi_ent*)(m3dc1_mesh::instance()->mesh->toModel(vt));
   else
-    gmi_ent* gent= (gmi_ent*)(m3dc1_mesh::instance()->mesh->toModel(vt));
+    gent = (gmi_ent*)(m3dc1_mesh::instance()->mesh->toModel(vt));
   int gType = gmi_dim(m3dc1_model::instance()->model,gent);
-  if(gType==0)
+  if (gType==0)
   {
     apf::Vector3 vcd_t;
     double vcd[3];
@@ -3938,8 +3968,8 @@ int m3dc1_epetra_print(int* matrix_id)
 #include <Teuchos_ScalarTraits.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
-#include "Amesos2.hpp"
-#include "Amesos2_Version.hpp"
+//#include "Amesos2.hpp"
+//#include "Amesos2_Version.hpp"
 #endif
 
 int m3dc1_solver_aztec(int* matrix_id, FieldID* x_fieldid, FieldID* b_fieldid)
@@ -3983,9 +4013,9 @@ int m3dc1_solver_aztec(int* matrix_id, FieldID* x_fieldid, FieldID* b_fieldid)
   AztecOO solver(problem);
   // FIXME: this crashes
   //solver.SetAztecOption(AZ_precond,AZ_Jacobi);
-  //solver.SetAztecOption(AZ_output,AZ_none);
+  solver.SetAztecOption(AZ_output,1);
 
-  solver.Iterate(100,1.0E-8);
+  solver.Iterate(100,1.0E-11);
   mat->num_solver_iter = solver.NumIters();
 
   // print residual
@@ -4018,8 +4048,8 @@ int m3dc1_solver_aztec(int* matrix_id, FieldID* x_fieldid, FieldID* b_fieldid)
 #include <Teuchos_ScalarTraits.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
-#include "Amesos2.hpp"
-#include "Amesos2_Version.hpp"
+//#include "Amesos2.hpp"
+//#include "Amesos2_Version.hpp"
 #endif
 
 int m3dc1_solver_amesos(int* matrix_id, FieldID* x_fieldid, FieldID* b_fieldid, const char* solver_name)

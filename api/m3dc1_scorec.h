@@ -94,8 +94,9 @@ int m3dc1_ent_getadj (int* /* in */ ent_dim, int* /* in */ ent_id, int* /* in */
                       int* /* out */ adj_ent, int* /* in */ adj_ent_allocated_size, int* /* out */ num_adj_ent);
 int m3dc1_ent_getnumadj (int* /* in */ ent_dim, int* /* in */ ent_id, int* /* in */ adj_dim, int* /* out */ num_adj_ent);
 int m3dc1_ent_getownpartid (int* /* in */ ent_dim, int* /* in */ ent_id, int* /* out */ owning_partid); //entprocowner_
-int m3dc1_ent_ismine (int* /* in */ ent_dim, int* /* in */ ent_id, int* /* out */ ismine); 
-
+int m3dc1_ent_ismine (int* /* in */ ent_dim, int* /* in */ ent_id, int* /* out */ ismine);
+int m3dc1_ent_isghost (int* /* in */ ent_dim, int* /* in */ ent_id, int* /* out */ isghost);
+  
 // node-specific functions
 int m3dc1_node_getcoord (int* /* in */ node_id, double* /* out */ coord ); 
 int m3dc1_node_getnormvec (int* /* in */ node_id, double* /* out */ xyz);
